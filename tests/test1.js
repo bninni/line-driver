@@ -7,7 +7,7 @@ opts.last
 opts.skip
 opt.count
 *****/
-var LineDriver = require('../index');
+var LineDriver = require('../index.min');
 
 LineDriver.settings({
 	commentDelim : '#',
