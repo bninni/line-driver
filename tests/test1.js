@@ -7,7 +7,7 @@ opts.last
 opts.skip
 opt.count
 *****/
-var LineDriver = require('../index.min');
+var LineDriver = require('../index');
 
 LineDriver.settings({
 	commentDelim : '#',
@@ -16,7 +16,7 @@ LineDriver.settings({
 });
 
 LineDriver.template("default",{
-	line : function( next, parser ){
+	line : function( next, args, parser ){
 		console.log(parser.line + '	absolute : ' + parser.index.absolute + '	valid : ' + parser.index.valid);
 		next();
 	}
@@ -51,7 +51,7 @@ function test( desc, opts ){
 test("All")
 
 test("Stop at 8 using controller",{
-	line : function( parser ){
+	line : function( args, parser ){
 		if( parser.index.valid === 8 ){ parser.close()};
 	},
 });

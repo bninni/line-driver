@@ -8,16 +8,23 @@ License	: MIT
 Test:
 	Clean and Valid functions
 	Using parser.nextLine
-	Multiple Templates
+	Stacked Templates (?)
 	Handlers
 	Writing files
 		-Different settings for 'join'
+		
+Create ReadMe and detailed Comments
+https://quickleft.com/blog/creating-and-publishing-a-node-js-module/
 =========================================
+
+Should Templates have their own handler?
+
 Allow first, last, skip, count to be changed dynamically?
 
 Error checking on invalid inputs?
 
-Create default Table template
+Create default Table template as example?
+	-csv
 
 Add in Compare function (?)
 *****/
@@ -121,8 +128,14 @@ function parse( opts, data, write ){
 		for( key in Settings ) obj[key] = Settings[key];
 		
 		//to update the default args
-		template.forEach(function(temp){
-			var tempArgs = temp.args || {};
+		template.forEach(function(name){
+			var temp,
+				tempArgs;
+				
+			temp = Templates[name];
+			if( !temp ) return;
+			
+			tempArgs = temp.args || {};
 			for( key in tempArgs ) obj[key] = tempArgs[key];
 		});
 		
@@ -157,19 +170,19 @@ function parse( opts, data, write ){
 				
 				if( arr.length ){
 					temp = Templates[ getFirst(arr) ];
-					if( temp && temp[name] ) temp[name]( next, arg );
+					if( temp && temp[name] ) temp[name]( next, args, arg );
 					else next();
 				}
-				else if( opts[name] ) opts[name]( arg );
+				else if( opts[name] ) opts[name]( args, arg );
 			};
 		next();
 	}
 	
 	function tryClose(){
 		if( closed ) return;
-		run('close', args );
+		run('close');
 		if( write ) write( out.join( args.join || Settings.join ), function(){
-			run('write', args )
+			run('write')
 		});
 	}
 
@@ -237,7 +250,7 @@ function parse( opts, data, write ){
 	}
 	
 	function init(){
-		run('init', args);
+		run('init');
 	}
 	
 	function line(){
