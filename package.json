@@ -2,25 +2,25 @@
   "name": "line-driver",
   "version": "1.0.0",
   "description": "A simple module to read or write files line by line with many options, including sync/async, templates, and validation.",
-  "main": "index.js",
+  "main": "index.min.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+	"uglify": "uglifyjs index.js --compress --mangle sort,toplevel -o index.min.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bninni/line-driver.git"
   },
   "keywords": [
+    "file",
+    "files",
     "line",
+    "lines",
+    "linebyline",
+    "by",
     "read",
     "reader",
     "readfile",
-    "lines",
-    "line",
-    "by",
-    "line",
-    "file",
-    "files",
     "write",
     "writer",
     "writefile"

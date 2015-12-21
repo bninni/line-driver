@@ -5,8 +5,6 @@ Website	: ninni.io
 Email	: brian@ninni.io
 License	: MIT
 =========================================
-TODO:
-
 Test:
 	Clean and Valid functions
 	Using parser.nextLine
@@ -14,19 +12,14 @@ Test:
 	Handlers
 	Writing files
 		-Different settings for 'join'
-
-Detailed comments
-	-.min version
-
 =========================================
-
 Allow first, last, skip, count to be changed dynamically?
 
 Error checking on invalid inputs?
 
 Create default Table template
 
-Add in Compare function
+Add in Compare function (?)
 *****/
 
 var fs = require('fs'),
@@ -129,8 +122,7 @@ function parse( opts, data, write ){
 		
 		//to update the default args
 		template.forEach(function(temp){
-			var key,
-				tempArgs = temp.args || {};
+			var tempArgs = temp.args || {};
 			for( key in tempArgs ) obj[key] = tempArgs[key];
 		});
 		
@@ -159,8 +151,7 @@ function parse( opts, data, write ){
 	}
 	
 	function run( name, arg ){
-		var key,
-			arr = template.slice(),
+		var arr = template.slice(),
 			next = function(){
 				var temp;
 				
