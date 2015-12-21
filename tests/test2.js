@@ -11,15 +11,6 @@ function test( desc, opts ){
 	
 	opts.args.in = 'test2.csv';
 	
-	opts.init = function(){
-		console.log("Opening Test : " + desc);
-	};
-	
-	opts.close = function(){
-		console.log('Closing Test : ' + desc);
-		console.log('');
-	};
-	
 	//opts.sync = true;
 	
 	LineDriver.read(opts);
@@ -29,11 +20,26 @@ function test( desc, opts ){
 
 }
 
-LineDriver.template("csv",{
+LineDriver.template('lowercase',{
+	clean : function( next, args, parser ){
+		parser.line = parser.line.toLowerCase();
+		next();
+	}
+});
+
+LineDriver.template('ignore-twice',{
+	valid : function( next, args, parser ){
+		if( parser.line.startsWith('twice') ) parser.valid = false;
+		else next();
+	}
+});
+
+LineDriver.template("table",{
 	init : function( next, args ){
 		args.table = [];
 		args.rows = [];
 		args.cols = [];
+		next();
 	},
 	line : function( next, args, parser ){
 		var colHead,
@@ -46,9 +52,6 @@ LineDriver.template("csv",{
 		if( args.rowHeadings && parser.index.valid === 1 ) args.rows = row;
 		else args.table.push(row);
 	},
-	close : function( next, args ){
-		if( args.callback ) args.callback( args.table, args.rows, args.cols );
-	},
 	args : {
 		colDelim : ',',
 		rowHeadings : false,
@@ -57,15 +60,39 @@ LineDriver.template("csv",{
 	}
 });
 
-test("To parse a csv table",{
-	template : ['csv'],
+function drawTable( args ){
+	var table = args.table,
+		cols = args.cols,
+		rows = args.rows,
+		split = splitter = '--------',
+		join = '\t|';
+		
+	console.log(join + rows.join(join) );
+	
+	rows.forEach(function(){ split += '+' + splitter.slice(1); });
+	console.log(split);
+	
+	cols.forEach(function(s, i){
+		console.log( s + join + table[i].join( join ) )
+	})
+	console.log('');
+}
+
+test("Print a csv table",{
+	template : ['lowercase','table'],
+	close : drawTable,
 	args : {
 		rowHeadings : true,
-		colHeadings : true,
-		callback : function( table, rows, cols ){
-			console.log(rows);
-			console.log(cols);
-			console.log(table);
-		},
+		colHeadings : true
+	}
+});
+
+
+test("Print another csv table",{
+	template : ['lowercase','ignore-twice','table'],
+	close : drawTable,
+	args : {
+		rowHeadings : true,
+		colHeadings : true
 	}
 });

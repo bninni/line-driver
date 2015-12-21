@@ -6,9 +6,6 @@ Email	: brian@ninni.io
 License	: MIT
 =========================================
 Test:
-	Clean and Valid functions
-	Using parser.nextLine
-	Stacked Templates (?)
 	Handlers
 	Writing files
 		-Different settings for 'join'
@@ -17,14 +14,13 @@ Create ReadMe and detailed Comments
 https://quickleft.com/blog/creating-and-publishing-a-node-js-module/
 =========================================
 
-Should Templates have their own handler?
+Should templates be able to include other templates?
+
+Should Templates be able to have their own handler?
 
 Allow first, last, skip, count to be changed dynamically?
 
 Error checking on invalid inputs?
-
-Create default Table template as example?
-	-csv
 
 Add in Compare function (?)
 *****/
@@ -108,9 +104,15 @@ function parse( opts, data, write ){
 			hasNextLine : {
 				get : hasNextLine,
 			},
+			goToLine : {
+				value : nextLine,
+			},
 			nextLine : {
 				get : nextLine,
-			}
+			},
+			write : {
+				get : addLine,
+			},
 		});
 			
 		Object.defineProperties( indices, {
@@ -129,8 +131,7 @@ function parse( opts, data, write ){
 		
 		//to update the default args
 		template.forEach(function(name){
-			var temp,
-				tempArgs;
+			var temp, tempArgs;
 				
 			temp = Templates[name];
 			if( !temp ) return;
@@ -153,8 +154,6 @@ function parse( opts, data, write ){
 		ignoreEmpty = obj.ignoreEmpty;
 		
 		args = obj;
-		
-		if( write ) parser.write = addLine;
 	}
 
 	function addLine( str ){
@@ -190,9 +189,9 @@ function parse( opts, data, write ){
 		var obj = {};
 		if( commentDelim ) str = str.split( commentDelim )[0];
 		if( trim ) str = str.trim();
-		obj.str = str;
+		obj.line = str;
 		run( 'clean', obj );
-		return obj.str;
+		return obj.line;
 	}
 	
 	function canContinue(){
@@ -202,8 +201,7 @@ function parse( opts, data, write ){
 	
 	function isValid( str ){
 		var obj = {
-			line : str,
-			index : indices
+			line : str
 		};
 		
 		if( ignoreEmpty && !str ) return false;

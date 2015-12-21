@@ -102,3 +102,41 @@ test("First is 2, skip is 2, count is 3",{
 		count : 3
 	}
 });
+
+test("First is 2, skip is 2, count is 4, after second line shift by 1",{
+	line : function( args, parser ){
+		if(parser.index.valid === 2) parser.goToLine(1,true);
+	},
+	args : {
+		skip : 2,
+		first : 2,
+		count : 4
+	}
+});
+
+test("Don't capture index 5, end at index 8",{
+	line : function( args, parser ){
+		if( parser.index.valid === 4 ){ console.log('Skipping: ' + parser.nextLine) };
+	},
+	args : {
+		last : 8,
+	}
+});
+
+test("Don't capture index 5, count is 8",{
+	line : function( args, parser ){
+		if( parser.index.valid === 4 ){ console.log('Skipping: ' + parser.nextLine) };
+	},
+	args : {
+		count : 8,
+	}
+});
+
+test("Don't count index 5 as valid, count is 7",{
+	line : function( args, parser ){
+		if( parser.index.valid === 4 ){ console.log('Skipping: ' + parser.goToLine(1,true) ) };
+	},
+	args : {
+		count : 7,
+	}
+});
