@@ -56,7 +56,7 @@ Here is a brief overview of what the possible input options are:
 
 ## API
 
-Every function has two arguments pass through it.  A 'props' and a 'parser'
+Every function has two arguments passed through to it.  A 'props' and a 'parser'.
 
 **props**
 
@@ -107,13 +107,12 @@ These are the various properties that a Parser object might have attached to it:
 	//2. ignoreValid (Bool) - Should this line not increase the valid line index? (Optional, default = false)
 	goToLine : [Function], //Returns the captured line or null
 
-	//The stop parsing the current file and close it
+	//The function to stop parsing the current file and close it
 	//This is not required, the parser will automatically close when it runs out of valid lines
 	//This will invoke the 'close' function and 'write' function (if applicable)
 	close : [Function],
 	
-	//The input can be a string or array of strings.
-	//Add the given string to the output file (if applicable)
+	//The function to add the given string to the output file (if applicable)
 	//Arguments:
 	//str (String || [Strings]) - The string(s) to add to the output file
 	write : [Function]
@@ -121,11 +120,11 @@ These are the various properties that a Parser object might have attached to it:
 }
 ```
 
-### Functions
+## Functions
 
 Functions and which parser properties are accessible in the parser object
 
-####init
+###init
 * **write**
 
 ```javascript
@@ -135,7 +134,7 @@ Functions and which parser properties are accessible in the parser object
 	}
 ```
 
-####clean
+###clean
 * **line**
 
 ```javascript
@@ -144,7 +143,7 @@ Functions and which parser properties are accessible in the parser object
 	}
 ```
 
-####valid
+###valid
 * **line, valid**
 
 (Note: line is a copy of the actual line, modifying will have no affect)
@@ -155,7 +154,7 @@ Functions and which parser properties are accessible in the parser object
 	}
 ```
 
-####line
+###line
 * **line, index, close, hasNextLine, goToLine, nextLine, write**
 
 ```javascript
@@ -166,7 +165,7 @@ Functions and which parser properties are accessible in the parser object
 	}
 ```
 
-####close
+###close
 * **write**
 
 ```javascript
@@ -176,91 +175,91 @@ Functions and which parser properties are accessible in the parser object
 	}
 ```
 
-####write
+###write
 ```javascript
 	write : function( props, parser ){
 		console.log('Done writing the file.');
 	}
 ```
 
-### Properties
+## Properties
 
 These are the different input properties that can be set
 
-####in           [String]
+###in           [String]
 **Required**
 
 The path to read in to the parser.
 
-####out          [String]
+###out          [String]
 **default = props.in**
 
 *write mode only*
 
 The path to write to. 
 
-####sync         [Boolean]
+###sync         [Boolean]
 **default = false**
 
 Whether or not the file should be parsed synchronously.
 
-####encoding     [String]
+###encoding     [String]
 **default = 'utf8'**
 
 The encoding of the file to read/write
 
-####delimiter    [String || RegExp]
+###delimiter    [String || RegExp]
 **default = /\r\r?|\r?\n/**
 
 The String or RegExp to use to split in the file into an array of lines.
 
-####join         [String]
+###join         [String]
 **default = '\n'**
 
 The string used to connect each line before writing to file.
 
-####eof          [String]
+###eof          [String]
 **default = ''**
 
 The string placed after the very last line when writing to the file.
 
-####first        [Number]
+###first        [Number]
 **default = 1**
 
 The index of the first line to send to the 'line' function.  Ignores invalid lines.
 
-####last        [Number]
+###last        [Number]
 
 The index of the last line to send to the 'line' function.  Ignores invalid lines.
 
-####count        [Number]
+###count        [Number]
 
 The total number of lines to send to the 'line' function.  Ignores invalid lines.
 
-####skip         [Number]
+###skip         [Number]
 **default = 1**
 
 The nth valid line to send to the 'line' function when capturing the next line. A value of 2 will capture every other valid line.
 
-####trim         [Boolean]
+###trim         [Boolean]
 **default = false**
 
 Whether or not it should automatically apply the .trim() function on the line to remove surrounding whitespace
 
-####commentDelim [String]
+###commentDelim [String]
 **default = ''**
 A quick way to remove comments from lines.  If this string is not empty, it will split the line using this value and only capture the first object in the resulting array.
 
-####ignoreEmpty  [Boolean]
+###ignoreEmpty  [Boolean]
 **default = false**
 
 Whether or not it should automatically set empty strings as 'invalid'
 
-### Settings
+## Settings
 
 The default value of any of the above properties (except in, out, last, and count) can be set using the following function:
 
-#### settings( options )
+###settings( options )
 
 Where options is an object containing the key : value pair you want to set.
 
@@ -271,11 +270,11 @@ LineDriver.settings( {
 } );
 ```
 
-### Templates
+##Templates
 
 Templates can be used to create default values for certain properties or functions.
 
-#### template( name, options )
+### template( name, options )
 
 **name [String]** : The name of the template
 **options [Objects]** : The default options of this template (same as above)
@@ -300,11 +299,11 @@ LineDriver.template('comma-splitter',{
 
 Set the 'default' template to apply to every file (it automatically gets places at the start of the template array).
 
-### Handles
+## Handles
 
 A template or input object can have a handler function associated with it.  This handler can be used to decide when to send the line to the 'lines' function instead of using the built-in method.
 
-####sendLine
+###sendLine
 The function to run the 'line' functions for all templates and the given input object.
 
 ```javascript
