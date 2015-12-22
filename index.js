@@ -6,9 +6,16 @@ Email	: brian@ninni.io
 License	: MIT
 =========================================
 Detailed Comments 
+
+Send 'index' to the clean and valid functions?  User will just have to know that the validIndex refers to the index of the line that was last sent
+
+Freeze the parser object
+
+parser.previousLine and goToline( -1 )?
+
 All opts and props reference should be set to variables at the start
 
-Allow first, last, skip, count to be changed dynamically?
+Allow first, last, step, count to be changed dynamically?
 
 Should templates be able to include other templates?
 
@@ -27,7 +34,7 @@ var fs = require('fs'),
 		join : '\n',
 		eof : '',
 		first : 1,
-		skip : 1,
+		step : 1,
 		trim : false,
 		commentDelim : '',
 		ignoreEmpty : false,
@@ -60,7 +67,7 @@ line	:	the function which will receive the line and do whatever it wants with it
 close	:	the function to run when lines stop being read (either by the stop function returning true or the lines array depleting)
 *****/
 function parse( opts, data, write ){
-	var str, skip, first, last, count, lines, handler, commentDelim, trim, ignoreEmpty,
+	var str, step, first, last, count, lines, handler, commentDelim, trim, ignoreEmpty,
 		out = [],
 		closed = false,
 		opts = opts || {},
@@ -143,7 +150,7 @@ function parse( opts, data, write ){
 
 		lines = data.split( obj.delimiter );
 		
-		skip = obj.skip;
+		step = obj.step;
 		first = obj.first = Math.max(0, obj.first-1);
 		last = obj.last;
 		count = obj.count;
@@ -212,7 +219,7 @@ function parse( opts, data, write ){
 	}
 	
 	function nextLine( i, ignoreValid ){
-		var i = i || skip;
+		var i = i || step;
 		
 		str = null;
 		
@@ -236,7 +243,7 @@ function parse( opts, data, write ){
 	function hasNextLine( target ){
 		var i = 0,
 			count = 0,
-			target = target || skip;
+			target = target || step;
 		while( !closed && i < lines.length ){
 			if( isValid( clean( lines[i++] ) ) ){
 				//return true if we have enough valid lines

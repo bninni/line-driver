@@ -4,7 +4,7 @@ Uses:
 controller.close()
 opts.first
 opts.last
-opts.skip
+opts.step
 opt.count
 *****/
 var LineDriver = require('../index');
@@ -82,33 +82,33 @@ test("First is 2, count is 6",{
 	}
 });
 
-test("Skip is 2",{
+test("step is 2",{
 	props : {
-		skip : 2,
+		step : 2,
 	}
 });
 
-test("First is 2, skip is 2",{
+test("First is 2, step is 2",{
 	props : {
-		skip : 2,
+		step : 2,
 		first : 2,
 	}
 });
 
-test("First is 2, skip is 2, count is 3",{
+test("First is 2, step is 2, count is 3",{
 	props : {
-		skip : 2,
+		step : 2,
 		first : 2,
 		count : 3
 	}
 });
 
-test("First is 2, skip is 2, count is 4, after second line shift by 1",{
+test("First is 2, step is 2, count is 4, after second line shift by 1",{
 	line : function( props, parser ){
 		if(parser.index.valid === 2) parser.goToLine(1,true);
 	},
 	props : {
-		skip : 2,
+		step : 2,
 		first : 2,
 		count : 4
 	}
@@ -116,7 +116,7 @@ test("First is 2, skip is 2, count is 4, after second line shift by 1",{
 
 test("Don't capture index 5, end at index 8",{
 	line : function( props, parser ){
-		if( parser.index.valid === 4 ){ console.log('Skipping: ' + parser.nextLine) };
+		if( parser.index.valid === 4 ){ console.log('stepping: ' + parser.nextLine) };
 	},
 	props : {
 		last : 8,
@@ -125,7 +125,7 @@ test("Don't capture index 5, end at index 8",{
 
 test("Don't capture index 5, count is 8",{
 	line : function( props, parser ){
-		if( parser.index.valid === 4 ){ console.log('Skipping: ' + parser.nextLine) };
+		if( parser.index.valid === 4 ){ console.log('stepping: ' + parser.nextLine) };
 	},
 	props : {
 		count : 8,
@@ -134,7 +134,7 @@ test("Don't capture index 5, count is 8",{
 
 test("Don't count index 5 as valid, count is 7",{
 	line : function( props, parser ){
-		if( parser.index.valid === 4 ){ console.log('Skipping: ' + parser.goToLine(1,true) ) };
+		if( parser.index.valid === 4 ){ console.log('stepping: ' + parser.goToLine(1,true) ) };
 	},
 	props : {
 		count : 7,

@@ -11,121 +11,541 @@ npm install -g line-driver
 ```
 ## Usage
 
+Since the module usage is pretty straightforward, lets jump right into examples.
+
+Not everything is covered in these Examples, so jump down to [API](#api) to get the full information.
+
+First, import the module into your program:
+
 ```javascript
 var LineDriver = require('line-driver');
-//To read a file using the given functions and properties.
-LineDriver.read( { options } );
-//To write a file using the given functions and properties.
-LineDriver.write( { options } );
 ```
 
-Here is a brief overview of what the possible input options are:
-
-```javascript
-{
-	//The function to run once the file has loaded and begins to be parsed.
-	init : [Function],
-
-	//The function to clean a string before passing it along to the validation and line functions.
-	clean : [Function],
-
-	//The function to determine whether the given string is valid or not.
-	//Lines that are not valid will be ignored.
-	valid : [Function],
-
-	//The function to parse each individual line.
-	line : [Function],
-
-	//The function to run when the file stops being parsed.
-	close : [Function],
-
-	//The function to run after an output file has been written.
-	//Note: Not used in the 'read' function*
-	write : [Function],
-
-	//A separate line handler function to use instead of the built-in one
-	handler : [Function],
-
-	//Array of names of templates to apply when parsing the file
-	template : [Array of Strings],
-	
-	//The properties to use when parsing the file
-	props : [Object],
-}
+For all of the examples, lets pretend that `example.txt` consists of the following:
+```
+1|	one
+2|	two
+3|	three
+4|	four
+5|	five
 ```
 
-## API
+### Reading a file
 
-Every function has two arguments passed through to it.  A 'props' and a 'parser'.
-
-**props**
-
-The first argument is the 'props' object.  
-The exact same 'props' object will be passed to each function.  
-This initially contains the settings used in the parser.
-You can use it share any other data from one function to the next.
-
-Note: Changing the settings after initialization will not have any affect.
-
-**parser**
-
-The second argument is the 'parser' object.
-This object will have different properties attached that relate directly to the parse state.
-Which properties are attached depend on the function that is using it. 
-
-### Parser Properties
-
-These are the various properties that a Parser object might have attached to it:
-
+**Simple Example**
 ```javascript
-{
-	//Contains the indices of the current line
-	index : {
-		absolute : [Number],	//The current line index from the start of the file
-		valid    : [Number]	//The current line index when ignoring invalid lines
+LineDriver.read( {
+	line : function( props, parser ){
+		console.log( parser.line );
 	},
-
-	//Whether the current line is valid or not
-	valid : [Boolean],
-
-	//The current line from the file
-	line : [String],
-
-	//Will return whether or not valid lines remain in the file.
-	//Arguments:
-	//count (Number) - Number of valid lines to check for (Optional)
-	hasNextLine : [Function], //Returns Boolean
-
-	//Get the next valid line from the file
-	//Note: This will update the current line and indices to the next line
-	nextLine : [String],
-
-	//Get the next nth valid line from the file
-	//Note: This will update the current line and indices to the next line
-	//Arguments:
-	//1. count (Number) - nth valid line to capture (Optional)
-	//2. ignoreValid (Bool) - Should this line not increase the valid line index? (Optional, default = false)
-	goToLine : [Function], //Returns the captured line or null
-
-	//The function to stop parsing the current file and close it
-	//This is not required, the parser will automatically close when it runs out of valid lines
-	//This will invoke the 'close' function and 'write' function (if applicable)
-	close : [Function],
-	
-	//The function to add the given string to the output file (if applicable)
-	//Arguments:
-	//str (String || [Strings]) - The string(s) to add to the output file
-	write : [Function]
-	
-}
+	props : {
+		in : 'path/to/example.txt'
+	}
+} );
 ```
 
-## Functions
+* `line` - The function to be called every time the Parser encounters a new line
+  * `props` - The object that contains the Settings or Properties used by the Parser
+    * The exact same `props` object is sent to every function call and can be used to share data from one function to another
+    * Changing any settings in this object will not have any effect
+  * `parser` - The object that allows the function to interact with the state of the Parser
+    * `parser.line` - The line that the parser is currently handling
+    * This object has more attributes/properties, some of which are only available in certain contexts.  Please read the [API](#api) documentation to learn more.
+* `props.in` - The path to the file to be read (using `fs.readFile`)
 
-Functions and which parser properties are accessible in the parser object
+In this scenario, every line from the file will be captured and printed to the console:
 
-### init
-* **write**
+```
+one
+two
+three
+four
+five
+>
+```
+
+**Line Index Exclusion**
+
+There are four input properties that define which lines are sent to the `line` function.
+
+* `first` - The index of the first line to capture
+  * *Default :* `1`
+* `last` - The index of the last line to capture
+* `count` - How many total lines to capture
+* `step` - Spacing betweens captured lines
+  * *Default :* `1`
+
+*Note -* All of these can be used independently from each other.
+
+* **first**
+
+```javascript
+LineDriver.read( {
+	line : function( props, parser ){
+		console.log( parser.line );
+	},
+	props : {
+		in : 'path/to/example.txt',
+		first : 2
+	}
+} );
+```
+
+Every line starting from line 2 will be captured:
+
+```
+two
+three
+four
+five
+>
+```
+
+* **last**
+
+```javascript
+LineDriver.read( {
+	line : function( props, parser ){
+		console.log( parser.line );
+	},
+	props : {
+		in : 'path/to/example.txt',
+		last : 4
+	}
+} );
+```
+
+Every line up to and including line 4 will be captured:
+
+```
+one
+two
+three
+four
+>
+```
+
+* **count**
+
+```javascript
+LineDriver.read( {
+	line : function( props, parser ){
+		console.log( parser.line );
+	},
+	props : {
+		in : 'path/to/example.txt',
+		first : 2,
+		count : 3
+	}
+} );
+```
+
+Only 3 lines will be captured, starting from line 2:
+
+```
+two
+three
+four
+>
+```
+
+* **step**
+
+```javascript
+LineDriver.read( {
+	line : function( props, parser ){
+		console.log( parser.line );
+	},
+	props : {
+		in : 'path/to/example.txt',
+		step : 2
+	}
+} );
+```
+
+Every other line will be captured:
+
+```
+one
+three
+five
+>
+```
+
+**String Exclusion**
+
+There are two input functions that can access `parser.line` before it gets sent to the `line` function.
+
+* `valid` - The function to determine if the `parser.line` is valid or not.
+  * *Note -* An invalid line will not be included in the **Line Index Exclusion** calculations or sent to the `line` function 
+* `clean` - The function to modify the `parser.line` **_before_** sending for validation
+
+**valid**
+
+```javascript
+LineDriver.read( {
+	line : function( props, parser ){
+		console.log( parser.line );
+	},
+	valid : function( props, parser ){
+		parser.valid = parser.line.length > 3;
+	},
+	props : {
+		in : 'path/to/example.txt',
+	}
+} );
+```
+
+* `parser.valid` - Determines whether the current line is a valid line or not.
+
+*Note -* `parser.line` in this context is only a copy.  Modifying it will have no effect.
+
+
+Only lines where the the `parser.line` is longer than three characters will be captured:
+
+```
+three
+four
+five
+>
+```
+
+**clean**
+
+```javascript
+LineDriver.read( {
+	line : function( props, parser ){
+		console.log( parser.line );
+	},
+	clean : function( props, parser ){
+		parser.line = parser.line.slice(1);
+	},
+	valid : function( props, parser ){
+		parser.valid = parser.line.length > 3;
+	},
+	props : {
+		in : 'path/to/example.txt',
+	}
+} );
+```
+
+Only lines where the the `clean`-ed `parser.line` is longer than three characters will be captured:
+
+```
+hree
+>
+```
+
+There are also three input properties that can allow for automatic cleaning and validation of `parser.line`
+
+* `commentDelim` - The character which indicates the start of a comment
+  * *Default :* `''`
+* `trim` - Whether or not surrounding whitespace should be removed from the string
+  * *Default :* `false`
+* `ignoreEmpty` - Whether or not empty strings (`''`) should be be considered invalid
+  * *Default :* `false`
+
+In the following example, lets assume that that `example.txt` now looks like the following:
+```
+1|	one
+2|
+3|	two		#comment?
+4|		three
+5|	four
+6|	#another comment:
+7|	five
+```
+
+Now lets use the above properties:
+```javascript
+LineDriver.read( {
+	line : function( props, parser ){
+		console.log( parser.line );
+	},
+	props : {
+		in : 'path/to/example.txt',
+		commentDelim : '#',
+		trim : true,
+		ignoreEmpty : true
+	}
+} );
+```
+
+What happens behind the scenes?
+
+First, before any `clean`-ing occurs, the parser does equivalent of the following:
+```javascript
+if( props.commentDelim ) parser.line = parser.line.splice( props.commentDelim )[0];
+if( props.trim ) parser.line.trim();
+```
+
+Then, before any `valid`-ation occurs, the parser does equivalent of the following:
+```javascript
+if( props.ignoreEmpty && !parser.line ) parser.valid = false;
+```
+
+And finally, our captured lines look like this:
+
+```
+one
+two
+three
+four
+five
+>
+```
+<a name='invalid'></a>
+*Note -* As mentioned above, all **_invalid_** lines are completely ignored by the Parser, even when considering **Line Index Exclusion** criteria.
+
+That means that adding the following Property into the above example:
+```javascript
+first : 3
+```
+
+will produce:
+```
+three
+four
+five
+>
+```
+
+The Parser starts at the 3rd **_valid_** line, even though it is actually the 4th line in the file.
+
+This is also true for `last`, `count`, and `step`.
+
+**Closing a File**
+
+A Parser can be forced to close by running the `parser.close()` function.  
+
+```javascript
+LineDriver.read( {
+	line : function( props, parser ){
+		console.log( parser.line );
+		if( parser.line === 'three' ) parser.close();
+	},
+	props : {
+		in : 'path/to/example.txt',
+	}
+} );
+```
+
+* `parser.close` - The function to stop parsing lines and call the `close` and `write` functions (if applicable)
+
+Every line will be captured until the `parser.close()` function is called
+
+```
+one
+two
+three
+>
+```
+
+Running this will stop all line parsing, and call the input `close` function (and write the `out` file, if applicable).
+
+
+**Other Functions**
+
+There are three more input functions:
+* `init` - The function to run once the `in` file is loaded but before the file parsing begins
+* `close` - The function to run once the `in` file is done being parsed
+* `write` - The function to run once the `out` file has been written
+  * *Note -* This is only used by `LineDriver.write`
+
+Let's again assume that `example.txt` is back to its original state.
+
+```javascript
+LineDriver.read( {
+	init : function( props, parser ){
+		console.log('Parsing Started...');
+	},
+	line : function( props, parser ){
+		console.log( '\t' + parser.line );
+	},
+	close : function( props, parser ){
+		console.log('...Parsing Finished');
+	},
+	props : {
+		in : 'path/to/example.txt'
+	}
+} );
+```
+
+And the console will look like this:
+
+```
+Parsing Started...
+	one
+	two
+	three
+	four
+	five
+...Parsing Finished
+>
+```
+
+**Other Properties**
+
+There are five more input properties:
+* `sync` - Whether or not to use `fs.readFileSync` & `fs.writeFileSync` instead of `fs.readFile` & `fs.writeFile`
+  * *Default :* `false`
+* `encoding` - The encoding of the `in` and `out` files
+  * *Default :* `'utf8'`
+* `delimiter` - The String or RegExp to apply to split the `in` file into an array of lines.
+  * *Default :* `new RegExp('\r\n?|\r?\n')`
+* `join` - The String to use to join every line in the `out` file before writing.
+  * *Default :* `'\n'`
+* `eof` - The String to add to the end of the file (attached to the last line)
+  * *Default :* `''`
+		
+### Writing a file
+
+**Example**
+```javascript
+LineDriver.write( {
+	line : function( props, parser ){
+		parser.write( parser.line );
+	},
+	props : {
+		in : 'path/to/example.txt',
+		out : 'path/to/new/file.txt'
+	}
+} );
+```
+
+The only difference between reading and writing a file is the `out` property and the `parser.write` function.
+
+* `props.out` - The path to the file to be written (using `fs.writeFile`)
+  * *Optional* - If no `out` path is given, it write back to the `in` path
+* `parser.write` - The function to add a line to the `out` file.  Input can be a string or array of strings
+  * *Note -* `parser.write` still exists for `LineDriver.read()`, but it will not do anything.
+
+
+## Settings
+
+Every `props` attribute listed above (except `in`, `out`, `last` and `count`) have a default value associated with them.  These default values can be changed.
+
+Let's assume that our program will only be parsing files that look like this:
+
+```
+1|	  one  :  1  ,  two  :  2  ,  three  :  3  ,  four  :  4  ,  five  :  5  
+```
+
+If we only wanted to capture the keys from these files, then the default settings can be updated as follows:
+
+```javascript
+LineDriver.settings( {
+	commentDelim : ':',
+	trim : true,
+	ignoreEmpty : true,
+	delimiter : ','
+} );
+```
+
+## Templates
+
+Read about Templates in the API section, [here](#templates)
+ 
+  
+## API<a name="api"></a>
+
+### Settings
+
+The LineDriver module has default settings associated with it.  These default settings can be updated to your preference.
+
+```javascript
+LineDriver.settings( { opts } )
+```
+
+The input options are `key : value` pairs where:
+* `key` - The name of the setting to update
+* `value` - The value to set as default
+
+The default settings and values are:
+
+* `commentDelim` - The character which indicates the start of a comment
+  * *Default :* `''`
+* `delimiter` - The String or RegExp to apply to split the `in` file into an array of lines.
+  * *Default :* `new RegExp('\r\n?|\r?\n')`
+* `encoding` - The encoding of the `in` and `out` files
+  * *Default :* `'utf8'`
+* `eof` - The String to add to the end of the file (attached to the last line)
+  * *Default :* `''`
+* `first` - The index of the first line to capture
+  * *Default :* `1`
+* `ignoreEmpty` - Whether or not empty strings (`''`) should be be considered invalid
+  * *Default :* `false`
+* `join` - The String to use to join every line in the `out` file before writing.
+  * *Default :* `'\n'`
+* `step` - Spacing betweens captured lines
+  * *Default :* `1`
+* `sync` - Whether or not to use `fs.readFileSync` & `fs.writeFileSync` instead of `fs.readFile` & `fs.writeFile`
+  * *Default :* `false`
+* `trim` - Whether or not surrounding whitespace should be removed from the string
+  * *Default :* `false`
+
+### Reading and Writing
+
+The LineDrive module can read or write a file using the following:
+```javascript
+LineDriver.read( { opts } )
+```
+or
+```javascript
+LineDriver.write( { opts } )
+```
+
+The input options are one or more of the following:
+* **Properties**
+* **Functions**
+* **Templates**
+
+Here is a simple example:
+
+In this example:
+* `line` is one of the possible input **Functions**
+* `props` is the input **Properties** object
+
+```javascript
+LineDriver.read( {
+	line : function( props, parser ){
+		console.log( parser.line );
+	},
+	props : {
+		in : 'path/to/example.txt'
+	}
+} );
+```
+
+**Functions**
+
+There are six functions that the Parser recognizes and handles:
+
+* `init` - The function to run once the `in` file is loaded but before the file parsing begins
+* `clean` - The function to modify the `parser.line` **_before_** sending for validation
+* `valid` - The function to determine if the `parser.line` is valid or not.
+  * An invalid line will not be included in the **Line Index Exclusion** calculations or sent to the `line` function 
+* `line` - The function to be called every time the Parser encounters a new line
+* `close` - The function to run once the `in` file is done being parsed
+* `write` - The function to run once the `out` file has been written
+  * This is only used by `LineDriver.write`
+
+Every function has two inputs to it:
+
+* `props` - The object that contains the Settings/Properties used by the Parser
+  * It also includes any additional data that was stored in the input **Properties** object
+  * The exact same `props` object is sent to every function call and can be used to share data from one function to another
+  * Changing any settings in this object will not have any effect
+* `parser` -The object that allows the function to interact with the state of the Parser
+  * Some `parser` properties are only available in certain contexts. (See below)
+  
+  
+* **init**
+
+The parser object has the following attributes:
+
+* `write` - The function to add a line to the out file.  Input can be a string or array of strings
+  * This is only used by `LineDriver.write`
 
 ```javascript
 	init : function( props, parser ){
@@ -134,39 +554,75 @@ Functions and which parser properties are accessible in the parser object
 	}
 ```
 
-### clean
-* **line**
+* **clean**
+
+The parser object has the following attributes:
+* `line` - The line that the parser is currently handling
 
 ```javascript
 	clean : function( props, parser ){
+		//to make sure every line is lowercase
 		parser.line = parser.line.toLowerCase();
 	}
 ```
 
-### valid
-* **line, valid**
+* **valid**
 
-(Note: line is a copy of the actual line, modifying will have no affect)
+The parser object has the following attributes:
+* `line` - The line that the parser is currently handling
+* `valid` - Determines whether the current line is a valid line or not.
+
+*Notes:*
+  * In this context, `line` is a copy of the actual `line`; modifying it will have no effect
+  * An invalid line will not be included in the **Line Index Exclusion** calculations or sent to the `line` function 
+    * For more info, see an example [here](#invalid)
 
 ```javascript
 	valid : function( props, parser ){
+		//to ignore lines that are three characters or less
 		parser.valid = parser.line.length > 3;
 	}
 ```
 
-### line
-* **line, index, close, hasNextLine, goToLine, nextLine, write**
+* **line**
+* `line` - The line that the parser is currently handling
+* `index` - The object containing the index of the current line
+  * `absolute` - The index of the current line from the start of the file, including invalid lines
+  * `valid` - The index of the current line from the first valid line, excluding invalid lines
+* `close` - The function to stop parsing lines and call the `close` and `write` functions (if applicable)
+* `hasNextLine` - The function to see if there are any valid lines left in the file
+  * Arguments:
+    * count - Number of valid lines to check for
+	  * *Optional,* default = `step` Property
+* `goToLine` - The function to capture the next valid line
+  * Arguments
+    1. count - Spacing between current line and desired line
+	  * *Optional,* default = `step` Property
+	2. ignoreValid - Should the desired line not increase the valid line index?
+	  * *Optional,* default = `false`
+* `nextLine` - The next line in the file
+  * Invoking this will update the `line` and `index` values to represent the next line
+  * Since this internally updates the current line, the parser will not send that line to the `line` function on the next pass
+* `write` - The function to add a line to the out file.  Input can be a string or array of strings
+  * This is only used by `LineDriver.write`
 
 ```javascript
 	line : function( props, parser ){
 		console.log('Line : ' + parser.line);
-		parser.write( parser.line );
+		
+		if( parser.hasNextLine() ){
+			console.log('Next Line : ' + parser.nextLine);
+			//parser.line has been updated to the new line since we accessed parser.nextLine
+			console.log('Line -> Next Line : ' + parser.line);
+		}
+		
 		if( parser.line === 'thats all folks' ) parser.close();
 	}
 ```
 
-### close
-* **write**
+* **close**
+* `write` - The function to add a line to the out file.  Input can be a string or array of strings
+  * This is only used by `LineDriver.write`
 
 ```javascript
 	close : function( props, parser ){
@@ -175,193 +631,145 @@ Functions and which parser properties are accessible in the parser object
 	}
 ```
 
-### write
+* **write**
 ```javascript
 	write : function( props, parser ){
 		console.log('Done writing the file.');
 	}
 ```
 
-## Properties
+**Properties**
 
-These are the different input properties that can be set
+The properties are any settings which you would like to override the default value of.
 
-### in           [String]
-**Required**
+In additional to the settings listed above, the Parser can recognize these additional settings:
 
-The path to read in to the parser.
+* `in` - The path to the file to be read (using `fs.readFile`)
+  * **_Required_**
+* `out` - The path to the file to be written (using `fs.writeFile`)
+  * *Optional* - If no `props.out` path is given, it write back to the `in` path
+  * This is only used by `LineDriver.write`
+* `last` - The index of the last line to capture
+* `count` - How many total lines to capture
+  
+*Note -* Any additional data can be attached to the properties object and can be shared 
 
-### out          [String]
-**default = props.in**
+**Templates** <a name='templates'></a>
 
-*write mode only*
+Templates can be used to create default values for properties or functions.
 
-The path to write to. 
+Let's create a template for parsing `.csv` files and assume that `example.txt` looks like the following:
+```
+1|	,X,Y
+2|  X,XX,XY
+3|	X,XX,XY
+```
 
-### sync         [Boolean]
-**default = false**
-
-Whether or not the file should be parsed synchronously.
-
-### encoding     [String]
-**default = 'utf8'**
-
-The encoding of the file to read/write
-
-### delimiter    [String || RegExp]
-**default = /\r\r?|\r?\n/**
-
-The String or RegExp to use to split in the file into an array of lines.
-
-### join         [String]
-**default = '\n'**
-
-The string used to connect each line before writing to file.
-
-### eof          [String]
-**default = ''**
-
-The string placed after the very last line when writing to the file.
-
-### first        [Number]
-**default = 1**
-
-The index of the first line to send to the 'line' function.  Ignores invalid lines.
-
-### last        [Number]
-
-The index of the last line to send to the 'line' function.  Ignores invalid lines.
-
-### count        [Number]
-
-The total number of lines to send to the 'line' function.  Ignores invalid lines.
-
-### skip         [Number]
-**default = 1**
-
-The nth valid line to send to the 'line' function when capturing the next line. A value of 2 will capture every other valid line.
-
-### trim         [Boolean]
-**default = false**
-
-Whether or not it should automatically apply the .trim() function on the line to remove surrounding whitespace
-
-### commentDelim [String]
-**default = ''**
-A quick way to remove comments from lines.  If this string is not empty, it will split the line using this value and only capture the first object in the resulting array.
-
-### ignoreEmpty  [Boolean]
-**default = false**
-
-Whether or not it should automatically set empty strings as 'invalid'
-
-## Settings
-
-The default value of any of the above properties (except in, out, last, and count) can be set using the following function:
-
-### settings( options )
-
-Where options is an object containing the key : value pair you want to set.
+Lets assume we want to create a template that parses the above table, and then only sends the 'cells' to the `line` function
 
 ```javascript
-LineDriver.settings( {
-	delimiter : ',',
-	sync : true
+LineDriver.template('table', {
+	//use the props object to store data
+	init : function( next, props, parser ){
+		props.table = [];
+		props.titles = {
+			rows : [],
+			cols : []
+		};
+		next();
+	},
+	line : function( next, props, parser ){
+		//turn the row into an array of cells
+		var rowTitle,
+			row = parser.line.split(',');
+		
+		//the first cell contains the row title
+		rowTitle = row.splice(0,1)[0];
+		
+		//the first row contains the column titles
+		if( parser.index.valid === 1 ) props.titles.cols = row;
+		else{
+			props.titles.rows.push( rowTitle );
+			//send each cell to the line function
+			row.forEach(function( value, i ){
+				props.currentCell = {
+					value : value,
+					col : i,
+					row : parser.index.valid - 1
+				};
+				next();
+			});
+		}
+	}
 } );
 ```
 
-## Templates
+* `next` - The function to call the corresponding function from the original input
+  * *i.e. :* Running `next()` in the `line` function will called the input `line` function
+* `parser.index` - The object containing the index of the current line
+  * `absolute` - The index of the current line from the start of the file, including invalid lines
+  * `valid` - The index of the current line from the first valid line, excluding invalid lines
 
-Templates can be used to create default values for certain properties or functions.
-
-### template( name, options )
-
-**name [String]** : The name of the template
-
-**options [Objects]** : The default options of this template (same as above)
-
-A template function is identical to a regular function except there is an additional argument that appears before any of the original ones.
-
-This argument is the 'next' function.  Calling this next function will the corresponding function in the next template.
-Templates are applied in the order they appear in the given template array.  When no more templates remain, it will run the given function in the original options.
-
+Now lets use that template:
+  
 ```javascript
-//Any function that uses this template will have the 'parser.line' value be split up and sent individually instead of all at once
-LineDriver.template('comma-splitter',{
-	line : function(next, args, parser){
-		var row = parser.line.split(',');
-		row.forEach( function( value ){
-			parser.line = value;
-			next();	//use this to run the given 'line' function (or the 'line' function in the next template if it exists)
-		});
-	}
-});
-```
-
-Set the 'default' template to apply to every file (it automatically gets places at the start of the template array).
-
-## Handles
-
-A template or input object can have a handler function associated with it.  This handler can be used to decide when to send the line to the 'lines' function instead of using the built-in method.
-
-### sendLine
-The function to run the 'line' functions for all templates and the given input object.
-
-```javascript
-//To send each cell in a csv to an output file
-LineDriver.write({
-	in : 'path/to/file.csv',
-	out : 'path/to/new/file.txt',
-	//Use the 'props' object to save the data
-	init : function(props, parser){
-		props.table = [];
-		props.rowHeads = [];
-		props.colHeads = [];
-		props.current = {};
-	},
+LineDriver.read({
 	line : function(args, parser){
-		var cell = props.current.cell,
-			colHead = props.colHeads[props.current.row],
-			rowHead = props.rowHeads[props.current.col];
+		var value = props.currentCell.value,
+			colTitle = props.titles.cols[props.currentCell.row],
+			rowTitle = props.titles.rows[props.currentCell.col];
 			
-		parser.write( rowHead + ' x ' + colHead + ' = ' + cell );
-	},
-	handler : function( props, parser ){
-		var rowHead, row;
-		
-		while( parser.hasNextLine() ){
-			row = parser.nextLine.split(',');
-			
-			//remove the first cell since it is a row header
-			rowHead = row.splice(0,1)[0];
-			
-			//if we aren't in the first row, save the row header
-			if( parser.index.valid !== 1 ) props.rowHeads.push( rowHead );
-			
-			//if we are in the first line, then save the row as the column heads
-			if( parser.index.valid === 1 ) props.colHeads = row;
-			//otherwise, add the row to the table and send the line to the 'line' functions
-			else{
-				props.table.push(row);
-				
-				props.current.row = props.table.length-1;
-				
-				row.forEach(function(cell, i){
-					props.current.cell = cell;
-					props.current.col = i;
-					parser.sendLine();
-				});
-			}
-		}
+		console.log( rowTitle + ' + ' + colTitle + ' = ' + value );
 	},
 	props : {
-		ignoreEmpty : true
-	}
+		in : 'path/to/example.txt'
+	},
+	template : ['table']
+})
+```
+
+* `template` - An array of names of templates to use when parsing the `in` file.
+  * *Note -* If more than one template name exists, the `next()` function will called the corresponding function in the next template in the list
+	* The first template called is index 0
+    * Once no more templates exist, then the corresponding input function will be called
+
+Running the above function and template will produce a console that looks like the following:
+```
+X + X = XX
+X + Y = XY
+X + X = XX
+X + Y = XY
+>
+```
+
+Useful for genetics, not for algebra.
+
+*Note -* The 'default' template, if it exists, will be automatically applied as the first template **_unless_** it already appears in the input `template` list.
+
+Templates give you some freedom on how data gets sent to the final function.  For example, the above `row.forEach()` function can look like the following:
+```javascript
+//send each cell to the line function
+row.forEach(function( value, i ){
+	props.handleCell(value, i, parser.index.valid - 1);
 });
 ```
 
-Note: Only one handler can be applied.  Priority first goes to the given options, and then it is based on the index in the template array (higher index = higher priority)
-
+And it can be used in the following manner:
+ 
+```javascript
+LineDriver.read({
+	props : {
+		in : 'path/to/example.txt',
+		handleCell : function(value, col, row){
+			var colTitle = props.titles.cols[row],
+				rowTitle = props.titles.rows[col];
+				
+			console.log( rowTitle + ' + ' + colTitle + ' = ' + value );
+		},
+	},
+	template : ['table']
+})
+```
 
 ## License
 ### MIT
