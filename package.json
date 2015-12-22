@@ -1,6 +1,6 @@
 {
   "name": "line-driver",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A simple configurable module to read or write files line by line.",
   "main": "index.min.js",
   "scripts": {
@@ -12,13 +12,13 @@
     "url": "git+https://github.com/bninni/line-driver.git"
   },
   "keywords": [
-    "file",
     "files",
+    "read",
+    "file",
     "line",
+    "by",
     "lines",
     "linebyline",
-    "by",
-    "read",
     "reader",
     "readfile",
     "write",
