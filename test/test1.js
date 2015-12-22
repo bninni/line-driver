@@ -16,7 +16,7 @@ LineDriver.settings({
 });
 
 LineDriver.template("default",{
-	line : function( next, args, parser ){
+	line : function( next, props, parser ){
 		console.log(parser.line + '	absolute : ' + parser.index.absolute + '	valid : ' + parser.index.valid);
 		next();
 	}
@@ -24,11 +24,11 @@ LineDriver.template("default",{
 
 function test( desc, opts ){
 	opts = opts || {};
-	if( !('args' in opts) ) opts.args = {};
+	if( !('props' in opts) ) opts.props = {};
 	
 	console.log('Before Test : ' + desc);
 	
-	opts.args.in = 'test1.txt';
+	opts.props.in = 'test1.txt';
 	
 	opts.init = function(){
 		console.log("Opening Test : " + desc);
@@ -51,52 +51,52 @@ function test( desc, opts ){
 test("All")
 
 test("Stop at 8 using controller",{
-	line : function( args, parser ){
+	line : function( props, parser ){
 		if( parser.index.valid === 8 ){ parser.close()};
 	},
 });
 
 test("Stop at 8 using 'last'",{
-	args : {
+	props : {
 		last : 8,
 	}
 });
 
 test("First is 2",{
-	args : {
+	props : {
 		first : 2,
 	}
 });
 
 test("First is 2, last is 7",{
-	args : {
+	props : {
 		first : 2,
 		last : 7,
 	}
 });
 
 test("First is 2, count is 6",{
-	args : {
+	props : {
 		first : 2,
 		count : 6,
 	}
 });
 
 test("Skip is 2",{
-	args : {
+	props : {
 		skip : 2,
 	}
 });
 
 test("First is 2, skip is 2",{
-	args : {
+	props : {
 		skip : 2,
 		first : 2,
 	}
 });
 
 test("First is 2, skip is 2, count is 3",{
-	args : {
+	props : {
 		skip : 2,
 		first : 2,
 		count : 3
@@ -104,10 +104,10 @@ test("First is 2, skip is 2, count is 3",{
 });
 
 test("First is 2, skip is 2, count is 4, after second line shift by 1",{
-	line : function( args, parser ){
+	line : function( props, parser ){
 		if(parser.index.valid === 2) parser.goToLine(1,true);
 	},
-	args : {
+	props : {
 		skip : 2,
 		first : 2,
 		count : 4
@@ -115,28 +115,28 @@ test("First is 2, skip is 2, count is 4, after second line shift by 1",{
 });
 
 test("Don't capture index 5, end at index 8",{
-	line : function( args, parser ){
+	line : function( props, parser ){
 		if( parser.index.valid === 4 ){ console.log('Skipping: ' + parser.nextLine) };
 	},
-	args : {
+	props : {
 		last : 8,
 	}
 });
 
 test("Don't capture index 5, count is 8",{
-	line : function( args, parser ){
+	line : function( props, parser ){
 		if( parser.index.valid === 4 ){ console.log('Skipping: ' + parser.nextLine) };
 	},
-	args : {
+	props : {
 		count : 8,
 	}
 });
 
 test("Don't count index 5 as valid, count is 7",{
-	line : function( args, parser ){
+	line : function( props, parser ){
 		if( parser.index.valid === 4 ){ console.log('Skipping: ' + parser.goToLine(1,true) ) };
 	},
-	args : {
+	props : {
 		count : 7,
 	}
 });

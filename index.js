@@ -5,24 +5,19 @@ Website	: ninni.io
 Email	: brian@ninni.io
 License	: MIT
 =========================================
-Test:
-	Handlers
-	Writing files
-		-Different settings for 'join'
-		
 Create ReadMe and detailed Comments
 https://quickleft.com/blog/creating-and-publishing-a-node-js-module/
 =========================================
 
-Should templates be able to include other templates?
-
-Should Templates be able to have their own handler?
+All opts and props reference should be set to variables at the start
 
 Allow first, last, skip, count to be changed dynamically?
 
+Should templates be able to include other templates?
+
 Error checking on invalid inputs?
 
-Add in Compare function (?)
+Add in Compare function
 *****/
 
 var fs = require('fs'),
@@ -34,6 +29,7 @@ var fs = require('fs'),
 		encoding : 'utf8',
 		delimiter : new RegExp('\r\n?|\r?\n'),
 		join : '\n',
+		eof : '',
 		first : 1,
 		skip : 1,
 		trim : false,
@@ -68,16 +64,16 @@ line	:	the function which will receive the line and do whatever it wants with it
 close	:	the function to run when lines stop being read (either by the stop function returning true or the lines array depleting)
 *****/
 function parse( opts, data, write ){
-	var str, skip, first, last, count, lines, commentDelim, trim, ignoreEmpty,
+	var str, skip, first, last, count, lines, handler, commentDelim, trim, ignoreEmpty,
 		out = [],
 		closed = false,
 		opts = opts || {},
-		args = opts.args || {},
-		handler = opts.handler,
+		props = opts.props || {},
 		index = 0,
 		validIndex = 0,
 		template = opts.template ? opts.template.slice() : [],
 		indices = {},
+		writer = {},
 		parser = {
 			index : indices
 		};
@@ -87,13 +83,16 @@ function parse( opts, data, write ){
 		var key,
 			obj = {};
 		
+		Object.defineProperties( writer, {
+			write : {
+				value : addLine,
+			},
+		});
+		
 		Object.defineProperties( parser, {
 			line : {
 				set : function(s){ str = s },
 				get : function(){ return str; }
-			},
-			args : {
-				get : function(){ return args; }
 			},
 			close : {
 				value : function(){
@@ -102,7 +101,7 @@ function parse( opts, data, write ){
 				}
 			},
 			hasNextLine : {
-				get : hasNextLine,
+				value : hasNextLine,
 			},
 			goToLine : {
 				value : nextLine,
@@ -111,7 +110,7 @@ function parse( opts, data, write ){
 				get : nextLine,
 			},
 			write : {
-				get : addLine,
+				value : addLine,
 			},
 		});
 			
@@ -129,18 +128,22 @@ function parse( opts, data, write ){
 
 		for( key in Settings ) obj[key] = Settings[key];
 		
-		//to update the default args
+		//to update the default props
 		template.forEach(function(name){
-			var temp, tempArgs;
+			var temp, tempProps;
 				
 			temp = Templates[name];
 			if( !temp ) return;
+
+			if( temp.handler ) handler = temp.handler;
 			
-			tempArgs = temp.args || {};
-			for( key in tempArgs ) obj[key] = tempArgs[key];
+			tempProps = temp.props || {};
+			for( key in tempProps ) obj[key] = tempProps[key];
 		});
 		
-		for( key in args ) obj[key] = args[key];
+		if( opts.handler ) handler = opts.handler;
+		
+		for( key in props ) obj[key] = props[key];
 
 		lines = data.split( obj.delimiter );
 		
@@ -153,7 +156,7 @@ function parse( opts, data, write ){
 		trim = obj.trim;
 		ignoreEmpty = obj.ignoreEmpty;
 		
-		args = obj;
+		props = obj;
 	}
 
 	function addLine( str ){
@@ -169,18 +172,18 @@ function parse( opts, data, write ){
 				
 				if( arr.length ){
 					temp = Templates[ getFirst(arr) ];
-					if( temp && temp[name] ) temp[name]( next, args, arg );
+					if( temp && temp[name] ) temp[name]( next, props, arg );
 					else next();
 				}
-				else if( opts[name] ) opts[name]( args, arg );
+				else if( opts[name] ) opts[name]( props, arg );
 			};
 		next();
 	}
 	
 	function tryClose(){
 		if( closed ) return;
-		run('close');
-		if( write ) write( out.join( args.join || Settings.join ), function(){
+		run('close', writer);
+		if( write ) write( out.join( props.join || Settings.join ) + props.eof, function(){
 			run('write')
 		});
 	}
@@ -201,12 +204,12 @@ function parse( opts, data, write ){
 	
 	function isValid( str ){
 		var obj = {
-			line : str
+			line : str,
+			valid : true
 		};
 		
 		if( ignoreEmpty && !str ) return false;
 		
-		obj.valid = true;
 		run('valid', obj );
 		return obj.valid;
 		
@@ -248,12 +251,11 @@ function parse( opts, data, write ){
 	}
 	
 	function init(){
-		run('init');
+		run('init', writer);
 	}
 	
 	function line(){
-		var ret = run('line', parser);
-		if( write ) addLine( ret );
+		run('line', parser);
 	}
 	
 	function start(){
@@ -266,19 +268,20 @@ function parse( opts, data, write ){
 		while( i-- ) nextLine(1,true);
 		
 		if( handler ){
-			parser.init = init;
-			parser.clean = clean;
-			parser.isValid = isValid;
-			parser.line = line;
-			return handler( parser );
+			Object.defineProperties( parser , {
+				sendLine : {
+					value : line
+				}
+			});
+			handler( props, parser );
 		}
-		
-		//handle the first line
-		if( isString( nextLine(1) ) ) line();
-		
-		//go through every line in the array or until it reaches the end index
-		while( isString( nextLine() ) ) line();
-		
+		else{
+			//handle the first line
+			if( isString( nextLine(1) ) ) line();
+			
+			//go through every line in the array or until it reaches the end index
+			while( isString( nextLine() ) ) line();
+		}
 		tryClose();
 	}
 	
@@ -287,15 +290,19 @@ function parse( opts, data, write ){
 
 function apply( opts, write ){
 	var opts = opts || {},
-		args = opts.args || {},
-		path = args.in,
-		sync = 'sync' in args ? args.sync : Settings.sync,
-		encoding = args.encoding || Settings.encoding;
+		props = opts.props || {},
+		path = props.in,
+		out = props.out || path,
+		sync = 'sync' in props ? props.sync : Settings.sync,
+		encoding = props.encoding || Settings.encoding;
 	
 	if( !path ) return;
 	
-	if( write ) write = function( data, callback ){
-		writeFile(args.out || path, data, callback);
+	if( write ) write = sync ? function( data, callback ){
+		writeFileSync(out, data);
+		callback();
+	} : function( data, callback ){
+		writeFile(out, data, callback);
 	};
 	
 	if( sync ) return parse( opts, readFileSync( path, encoding ), write );

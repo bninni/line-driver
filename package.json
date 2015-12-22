@@ -1,7 +1,7 @@
 {
   "name": "line-driver",
   "version": "1.0.0",
-  "description": "A simple module to read or write files line by line with many options, including sync/async, templates, and validation.",
+  "description": "A simple configurable module to read or write files line by line.",
   "main": "index.min.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
