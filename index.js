@@ -5,10 +5,7 @@ Website	: ninni.io
 Email	: brian@ninni.io
 License	: MIT
 =========================================
-Create ReadMe and detailed Comments
-https://quickleft.com/blog/creating-and-publishing-a-node-js-module/
-=========================================
-
+Detailed Comments 
 All opts and props reference should be set to variables at the start
 
 Allow first, last, skip, count to be changed dynamically?
@@ -19,7 +16,6 @@ Error checking on invalid inputs?
 
 Add in Compare function
 *****/
-
 var fs = require('fs'),
 	readFile = fs.readFile,
 	readFileSync = fs.readFileSync,
