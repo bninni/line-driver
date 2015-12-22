@@ -277,6 +277,7 @@ Templates can be used to create default values for certain properties or functio
 ### template( name, options )
 
 **name [String]** : The name of the template
+
 **options [Objects]** : The default options of this template (same as above)
 
 A template function is identical to a regular function except there is an additional argument that appears before any of the original ones.
@@ -362,5 +363,5 @@ LineDriver.write({
 Note: Only one handler can be applied.  Priority first goes to the given options, and then it is based on the index in the template array (higher index = higher priority)
 
 
-##License
+## License
 ### MIT
