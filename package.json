@@ -1,8 +1,8 @@
 {
   "name": "line-driver",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A simple configurable module to read or write files line by line.",
-  "main": "index.js",
+  "main": "index.min.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
 	"uglify": "uglifyjs index.js --compress --mangle sort,toplevel -o index.min.js"

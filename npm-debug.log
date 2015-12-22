@@ -1,0 +1,114 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'C:\\Program Files\\nodejs\\node.exe',
+1 verbose cli   'C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
+1 verbose cli   'publish',
+1 verbose cli   '--force' ]
+2 info using npm@2.14.7
+3 info using node@v4.2.3
+4 warn using --force I sure hope you know what you are doing.
+5 verbose publish [ '.' ]
+6 silly cache add args [ '.', null ]
+7 verbose cache add spec .
+8 silly cache add parsed spec Result {
+8 silly cache add   raw: '.',
+8 silly cache add   scope: null,
+8 silly cache add   name: null,
+8 silly cache add   rawSpec: '.',
+8 silly cache add   spec: 'C:\\Users\\Brian\\Dropbox\\Apps\\Websites\\Libraries\\NodeModules\\line-driver',
+8 silly cache add   type: 'directory' }
+9 verbose addLocalDirectory C:\Users\Brian\AppData\Roaming\npm-cache\line-driver\1.0.3\package.tgz not in flight; packing
+10 verbose tar pack [ 'C:\\Users\\Brian\\AppData\\Roaming\\npm-cache\\line-driver\\1.0.3\\package.tgz',
+10 verbose tar pack   'C:\\Users\\Brian\\Dropbox\\Apps\\Websites\\Libraries\\NodeModules\\line-driver' ]
+11 verbose tarball C:\Users\Brian\AppData\Roaming\npm-cache\line-driver\1.0.3\package.tgz
+12 verbose folder C:\Users\Brian\Dropbox\Apps\Websites\Libraries\NodeModules\line-driver
+13 info prepublish line-driver@1.0.3
+14 verbose addLocalTarball adding from inside cache C:\Users\Brian\AppData\Roaming\npm-cache\line-driver\1.0.3\package.tgz
+15 silly cache afterAdd line-driver@1.0.3
+16 verbose afterAdd C:\Users\Brian\AppData\Roaming\npm-cache\line-driver\1.0.3\package\package.json not in flight; writing
+17 verbose afterAdd C:\Users\Brian\AppData\Roaming\npm-cache\line-driver\1.0.3\package\package.json written
+18 silly publish { name: 'line-driver',
+18 silly publish   version: '1.0.3',
+18 silly publish   description: 'A simple configurable module to read or write files line by line.',
+18 silly publish   main: 'index.js',
+18 silly publish   scripts:
+18 silly publish    { test: 'echo "Error: no test specified" && exit 1',
+18 silly publish      uglify: 'uglifyjs index.js --compress --mangle sort,toplevel -o index.min.js' },
+18 silly publish   repository:
+18 silly publish    { type: 'git',
+18 silly publish      url: 'git+https://github.com/bninni/line-driver.git' },
+18 silly publish   keywords:
+18 silly publish    [ 'file',
+18 silly publish      'files',
+18 silly publish      'line',
+18 silly publish      'lines',
+18 silly publish      'linebyline',
+18 silly publish      'by',
+18 silly publish      'read',
+18 silly publish      'reader',
+18 silly publish      'readfile',
+18 silly publish      'write',
+18 silly publish      'writer',
+18 silly publish      'writefile' ],
+18 silly publish   author:
+18 silly publish    { name: 'Brian Ninni',
+18 silly publish      email: 'brian@ninni.io',
+18 silly publish      url: 'http://ninni.io' },
+18 silly publish   license: 'MIT',
+18 silly publish   bugs: { url: 'https://github.com/bninni/line-driver/issues' },
+18 silly publish   homepage: 'https://github.com/bninni/line-driver#readme',
+18 silly publish   readme: '# line-driver\r\nA simple configurable module to read or write files line by line.\r\n\r\n## Install\r\n```\r\nnpm install line-driver\r\n```\r\nor\r\n```\r\nnpm install -g line-driver\r\n```\r\n## Usage\r\n\r\n```javascript\r\nvar LineDriver = require(\'line-driver\');\r\n//To read a file using the given functions and properties.\r\nLineDriver.read( { options } );\r\n//To write a file using the given functions and properties.\r\nLineDriver.write( { options } );\r\n```\r\n\r\nHere is a brief overview of what the possible input options are:\r\n\r\n```javascript\r\n{\r\n\t//The function to run once the file has loaded and begins to be parsed.\r\n\tinit : [Function],\r\n\r\n\t//The function to clean a string before passing it along to the validation and line functions.\r\n\tclean : [Function],\r\n\r\n\t//The function to determine whether the given string is valid or not.\r\n\t//Lines that are not valid will be ignored.\r\n\tvalid : [Function],\r\n\r\n\t//The function to parse each individual line.\r\n\tline : [Function],\r\n\r\n\t//The function to run when the file stops being parsed.\r\n\tclose : [Function],\r\n\r\n\t//The function to run after an output file has been written.\r\n\t//Note: Not used in the \'read\' function*\r\n\twrite : [Function],\r\n\r\n\t//A separate line handler function to use instead of the built-in one\r\n\thandler : [Function],\r\n\r\n\t//Array of names of templates to apply when parsing the file\r\n\ttemplate : [Array of Strings],\r\n\t\r\n\t//The properties to use when parsing the file\r\n\tprops : [Object],\r\n}\r\n```\r\n\r\n## API\r\n\r\nEvery function has two arguments passed through to it.  A \'props\' and a \'parser\'.\r\n\r\n**props**\r\n\r\nThe first argument is the \'props\' object.  \r\nThe exact same \'props\' object will be passed to each function.  \r\nThis initially contains the settings used in the parser.\r\nYou can use it share any other data from one function to the next.\r\n\r\nNote: Changing the settings after initialization will not have any affect.\r\n\r\n**parser**\r\n\r\nThe second argument is the \'parser\' object.\r\nThis object will have different properties attached that relate directly to the parse state.\r\nWhich properties are attached depend on the function that is using it. \r\n\r\n### Parser Properties\r\n\r\nThese are the various properties that a Parser object might have attached to it:\r\n\r\n```javascript\r\n{\r\n\t//Contains the indices of the current line\r\n\tindex : {\r\n\t\tabsolute : [Number],\t//The current line index from the start of the file\r\n\t\tvalid    : [Number]\t//The current line index when ignoring invalid lines\r\n\t},\r\n\r\n\t//Whether the current line is valid or not\r\n\tvalid : [Boolean],\r\n\r\n\t//The current line from the file\r\n\tline : [String],\r\n\r\n\t//Will return whether or not valid lines remain in the file.\r\n\t//Arguments:\r\n\t//count (Number) - Number of valid lines to check for (Optional)\r\n\thasNextLine : [Function], //Returns Boolean\r\n\r\n\t//Get the next valid line from the file\r\n\t//Note: This will update the current line and indices to the next line\r\n\tnextLine : [String],\r\n\r\n\t//Get the next nth valid line from the file\r\n\t//Note: This will update the current line and indices to the next line\r\n\t//Arguments:\r\n\t//1. count (Number) - nth valid line to capture (Optional)\r\n\t//2. ignoreValid (Bool) - Should this line not increase the valid line index? (Optional, default = false)\r\n\tgoToLine : [Function], //Returns the captured line or null\r\n\r\n\t//The function to stop parsing the current file and close it\r\n\t//This is not required, the parser will automatically close when it runs out of valid lines\r\n\t//This will invoke the \'close\' function and \'write\' function (if applicable)\r\n\tclose : [Function],\r\n\t\r\n\t//The function to add the given string to the output file (if applicable)\r\n\t//Arguments:\r\n\t//str (String || [Strings]) - The string(s) to add to the output file\r\n\twrite : [Function]\r\n\t\r\n}\r\n```\r\n\r\n## Functions\r\n\r\nFunctions and which parser properties are accessible in the parser object\r\n\r\n###init\r\n* **write**\r\n\r\n```javascript\r\n\tinit : function( props, parser ){\r\n\t\tconsole.log(\'Began parsing the file.\');\r\n\t\tparser.write(\'Start of File\');\r\n\t}\r\n```\r\n\r\n###clean\r\n* **line**\r\n\r\n```javascript\r\n\tclean : function( props, parser ){\r\n\t\tparser.line = parser.line.toLowerCase();\r\n\t}\r\n```\r\n\r\n###valid\r\n* **line, valid**\r\n\r\n(Note: line is a copy of the actual line, modifying will have no affect)\r\n\r\n```javascript\r\n\tvalid : function( props, parser ){\r\n\t\tparser.valid = parser.line.length > 3;\r\n\t}\r\n```\r\n\r\n###line\r\n* **line, index, close, hasNextLine, goToLine, nextLine, write**\r\n\r\n```javascript\r\n\tline : function( props, parser ){\r\n\t\tconsole.log(\'Line : \' + parser.line);\r\n\t\tparser.write( parser.line );\r\n\t\tif( parser.line === \'thats all folks\' ) parser.close();\r\n\t}\r\n```\r\n\r\n###close\r\n* **write**\r\n\r\n```javascript\r\n\tclose : function( props, parser ){\r\n\t\tconsole.log(\'Done parsing the file.\');\r\n\t\tparser.write(\'End of file\');\r\n\t}\r\n```\r\n\r\n###write\r\n```javascript\r\n\twrite : function( props, parser ){\r\n\t\tconsole.log(\'Done writing the file.\');\r\n\t}\r\n```\r\n\r\n## Properties\r\n\r\nThese are the different input properties that can be set\r\n\r\n###in           [String]\r\n**Required**\r\n\r\nThe path to read in to the parser.\r\n\r\n###out          [String]\r\n**default = props.in**\r\n\r\n*write mode only*\r\n\r\nThe path to write to. \r\n\r\n###sync         [Boolean]\r\n**default = false**\r\n\r\nWhether or not the file should be parsed synchronously.\r\n\r\n###encoding     [String]\r\n**default = \'utf8\'**\r\n\r\nThe encoding of the file to read/write\r\n\r\n###delimiter    [String || RegExp]\r\n**default = /\\r\\r?|\\r?\\n/**\r\n\r\nThe String or RegExp to use to split in the file into an array of lines.\r\n\r\n###join         [String]\r\n**default = \'\\n\'**\r\n\r\nThe string used to connect each line before writing to file.\r\n\r\n###eof          [String]\r\n**default = \'\'**\r\n\r\nThe string placed after the very last line when writing to the file.\r\n\r\n###first        [Number]\r\n**default = 1**\r\n\r\nThe index of the first line to send to the \'line\' function.  Ignores invalid lines.\r\n\r\n###last        [Number]\r\n\r\nThe index of the last line to send to the \'line\' function.  Ignores invalid lines.\r\n\r\n###count        [Number]\r\n\r\nThe total number of lines to send to the \'line\' function.  Ignores invalid lines.\r\n\r\n###skip         [Number]\r\n**default = 1**\r\n\r\nThe nth valid line to send to the \'line\' function when capturing the next line. A value of 2 will capture every other valid line.\r\n\r\n###trim         [Boolean]\r\n**default = false**\r\n\r\nWhether or not it should automatically apply the .trim() function on the line to remove surrounding whitespace\r\n\r\n###commentDelim [String]\r\n**default = \'\'**\r\nA quick way to remove comments from lines.  If this string is not empty, it will split the line using this value and only capture the first object in the resulting array.\r\n\r\n###ignoreEmpty  [Boolean]\r\n**default = false**\r\n\r\nWhether or not it should automatically set empty strings as \'invalid\'\r\n\r\n## Settings\r\n\r\nThe default value of any of the above properties (except in, out, last, and count) can be set using the following function:\r\n\r\n###settings( options )\r\n\r\nWhere options is an object containing the key : value pair you want to set.\r\n\r\n```javascript\r\nLineDriver.settings( {\r\n\tdelimiter : \',\',\r\n\tsync : true\r\n} );\r\n```\r\n\r\n##Templates\r\n\r\nTemplates can be used to create default values for certain properties or functions.\r\n\r\n### template( name, options )\r\n\r\n**name [String]** : The name of the template\r\n\r\n**options [Objects]** : The default options of this template (same as above)\r\n\r\nA template function is identical to a regular function except there is an additional argument that appears before any of the original ones.\r\n\r\nThis argument is the \'next\' function.  Calling this next function will the corresponding function in the next template.\r\nTemplates are applied in the order they appear in the given template array.  When no more templates remain, it will run the given function in the original options.\r\n\r\n```javascript\r\n//Any function that uses this template will have the \'parser.line\' value be split up and sent individually instead of all at once\r\nLineDriver.template(\'comma-splitter\',{\r\n\tline : function(next, args, parser){\r\n\t\tvar row = parser.line.split(\',\');\r\n\t\trow.forEach( function( value ){\r\n\t\t\tparser.line = value;\r\n\t\t\tnext();\t//use this to run the given \'line\' function (or the \'line\' function in the next template if it exists)\r\n\t\t});\r\n\t}\r\n});\r\n```\r\n\r\nSet the \'default\' template to apply to every file (it automatically gets places at the start of the template array).\r\n\r\n## Handles\r\n\r\nA template or input object can have a handler function associated with it.  This handler can be used to decide when to send the line to the \'lines\' function instead of using the built-in method.\r\n\r\n###sendLine\r\nThe function to run the \'line\' functions for all templates and the given input object.\r\n\r\n```javascript\r\n//To send each cell in a csv to an output file\r\nLineDriver.write({\r\n\tin : \'path/to/file.csv\',\r\n\tout : \'path/to/new/file.txt\',\r\n\t//Use the \'props\' object to save the data\r\n\tinit : function(props, parser){\r\n\t\tprops.table = [];\r\n\t\tprops.rowHeads = [];\r\n\t\tprops.colHeads = [];\r\n\t\tprops.current = {};\r\n\t},\r\n\tline : function(args, parser){\r\n\t\tvar cell = props.current.cell,\r\n\t\t\tcolHead = props.colHeads[props.current.row],\r\n\t\t\trowHead = props.rowHeads[props.current.col];\r\n\t\t\t\r\n\t\tparser.write( rowHead + \' x \' + colHead + \' = \' + cell );\r\n\t},\r\n\thandler : function( props, parser ){\r\n\t\tvar rowHead, row;\r\n\t\t\r\n\t\twhile( parser.hasNextLine() ){\r\n\t\t\trow = parser.nextLine.split(\',\');\r\n\t\t\t\r\n\t\t\t//remove the first cell since it is a row header\r\n\t\t\trowHead = row.splice(0,1)[0];\r\n\t\t\t\r\n\t\t\t//if we aren\'t in the first row, save the row header\r\n\t\t\tif( parser.index.valid !== 1 ) props.rowHeads.push( rowHead );\r\n\t\t\t\r\n\t\t\t//if we are in the first line, then save the row as the column heads\r\n\t\t\tif( parser.index.valid === 1 ) props.colHeads = row;\r\n\t\t\t//otherwise, add the row to the table and send the line to the \'line\' functions\r\n\t\t\telse{\r\n\t\t\t\tprops.table.push(row);\r\n\t\t\t\t\r\n\t\t\t\tprops.current.row = props.table.length-1;\r\n\t\t\t\t\r\n\t\t\t\trow.forEach(function(cell, i){\r\n\t\t\t\t\tprops.current.cell = cell;\r\n\t\t\t\t\tprops.current.col = i;\r\n\t\t\t\t\tparser.sendLine();\r\n\t\t\t\t});\r\n\t\t\t}\r\n\t\t}\r\n\t},\r\n\tprops : {\r\n\t\tignoreEmpty : true\r\n\t}\r\n});\r\n```\r\n\r\nNote: Only one handler can be applied.  Priority first goes to the given options, and then it is based on the index in the template array (higher index = higher priority)\r\n\r\n\r\n## License\r\n### MIT',
+18 silly publish   readmeFilename: 'README.md',
+18 silly publish   gitHead: '35452a60dcbbc8c2009e1e0e19d527c4238601e1',
+18 silly publish   _id: 'line-driver@1.0.3',
+18 silly publish   _shasum: '4058649a78a3e2391dee5538ebc401f6936378b4',
+18 silly publish   _from: '.' }
+19 verbose getPublishConfig undefined
+20 silly mapToRegistry name line-driver
+21 silly mapToRegistry using default registry
+22 silly mapToRegistry registry https://registry.npmjs.org/
+23 silly mapToRegistry uri https://registry.npmjs.org/line-driver
+24 verbose publish registryBase https://registry.npmjs.org/
+25 silly publish uploading C:\Users\Brian\AppData\Roaming\npm-cache\line-driver\1.0.3\package.tgz
+26 verbose request uri https://registry.npmjs.org/line-driver
+27 verbose request sending authorization for write operation
+28 info attempt registry request try #1 at 1:21:27 AM
+29 verbose request using bearer token for auth
+30 verbose request id 24b92170fb798c49
+31 http request PUT https://registry.npmjs.org/line-driver
+32 http 403 https://registry.npmjs.org/line-driver
+33 verbose headers { 'content-type': 'application/json',
+33 verbose headers   'cache-control': 'max-age=300',
+33 verbose headers   'content-length': '95',
+33 verbose headers   'accept-ranges': 'bytes',
+33 verbose headers   date: 'Tue, 22 Dec 2015 06:21:41 GMT',
+33 verbose headers   via: '1.1 varnish',
+33 verbose headers   connection: 'keep-alive',
+33 verbose headers   'x-served-by': 'cache-jfk1037-JFK',
+33 verbose headers   'x-cache': 'MISS',
+33 verbose headers   'x-cache-hits': '0',
+33 verbose headers   'x-timer': 'S1450765300.511849,VS0,VE756' }
+34 verbose request invalidating C:\Users\Brian\AppData\Roaming\npm-cache\registry.npmjs.org\line-driver on PUT
+35 error publish Failed PUT 403
+36 verbose stack Error: "You cannot publish over the previously published version 1.0.3." : line-driver
+36 verbose stack     at makeError (C:\Program Files\nodejs\node_modules\npm\node_modules\npm-registry-client\lib\request.js:264:12)
+36 verbose stack     at CachingRegistryClient.<anonymous> (C:\Program Files\nodejs\node_modules\npm\node_modules\npm-registry-client\lib\request.js:252:14)
+36 verbose stack     at Request._callback (C:\Program Files\nodejs\node_modules\npm\node_modules\npm-registry-client\lib\request.js:172:14)
+36 verbose stack     at Request.self.callback (C:\Program Files\nodejs\node_modules\npm\node_modules\request\request.js:198:22)
+36 verbose stack     at emitTwo (events.js:87:13)
+36 verbose stack     at Request.emit (events.js:172:7)
+36 verbose stack     at Request.<anonymous> (C:\Program Files\nodejs\node_modules\npm\node_modules\request\request.js:1063:14)
+36 verbose stack     at emitOne (events.js:82:20)
+36 verbose stack     at Request.emit (events.js:169:7)
+36 verbose stack     at IncomingMessage.<anonymous> (C:\Program Files\nodejs\node_modules\npm\node_modules\request\request.js:1009:12)
+37 verbose statusCode 403
+38 verbose pkgid line-driver
+39 verbose cwd C:\Users\Brian\Dropbox\Apps\Websites\Libraries\NodeModules\line-driver
+40 error Windows_NT 6.1.7601
+41 error argv "C:\\Program Files\\nodejs\\node.exe" "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js" "publish" "--force"
+42 error node v4.2.3
+43 error npm  v2.14.7
+44 error code E403
+45 error "You cannot publish over the previously published version 1.0.3." : line-driver
+46 error If you need help, you may report this error at:
+46 error     <https://github.com/npm/npm/issues>
+47 verbose exit [ 1, true ]
