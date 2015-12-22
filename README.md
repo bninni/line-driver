@@ -11,7 +11,7 @@ npm install -g line-driver
 ```
 ## Usage
 
-Since the module usage is pretty straightforward, lets jump right into examples.
+Since the module usage is pretty straightforward, let's jump right into examples.
 
 Not everything is covered in these Examples, so jump down to [API](#api) to get the full information.
 
@@ -21,7 +21,7 @@ First, import the module into your program:
 var LineDriver = require('line-driver');
 ```
 
-For all of the examples, lets pretend that `example.txt` consists of the following:
+For all of the examples, let's pretend that `example.txt` consists of the following:
 ```
 1|	one
 2|	two
@@ -29,7 +29,7 @@ For all of the examples, lets pretend that `example.txt` consists of the followi
 4|	four
 5|	five
 ```
-
+---
 ### Reading a file
 
 **Simple Example**
@@ -63,7 +63,7 @@ four
 five
 >
 ```
-
+---
 **Line Index Exclusion**
 
 There are four input properties that define which lines are sent to the `line` function.
@@ -77,6 +77,7 @@ There are four input properties that define which lines are sent to the `line` f
 
 *Note -* All of these can be used independently from each other.
 
+---
 * **first**
 
 ```javascript
@@ -100,7 +101,7 @@ four
 five
 >
 ```
-
+---
 * **last**
 
 ```javascript
@@ -124,7 +125,7 @@ three
 four
 >
 ```
-
+---
 * **count**
 
 ```javascript
@@ -148,7 +149,7 @@ three
 four
 >
 ```
-
+---
 * **step**
 
 ```javascript
@@ -171,7 +172,7 @@ three
 five
 >
 ```
-
+---
 **String Exclusion**
 
 There are two input functions that can access `parser.line` before it gets sent to the `line` function.
@@ -180,6 +181,7 @@ There are two input functions that can access `parser.line` before it gets sent 
   * *Note -* An invalid line will not be included in the **Line Index Exclusion** calculations or sent to the `line` function 
 * `clean` - The function to modify the `parser.line` **_before_** sending for validation
 
+---
 **valid**
 
 ```javascript
@@ -209,7 +211,8 @@ four
 five
 >
 ```
-
+---
+<a name='invalid'></a>
 **clean**
 
 ```javascript
@@ -245,7 +248,7 @@ There are also three input properties that can allow for automatic cleaning and 
 * `ignoreEmpty` - Whether or not empty strings (`''`) should be be considered invalid
   * *Default :* `false`
 
-In the following example, lets assume that that `example.txt` now looks like the following:
+In the following example, let's assume that that `example.txt` now looks like the following:
 ```
 1|	one
 2|
@@ -256,7 +259,7 @@ In the following example, lets assume that that `example.txt` now looks like the
 7|	five
 ```
 
-Now lets use the above properties:
+Now let's use the above properties:
 ```javascript
 LineDriver.read( {
 	line : function( props, parser ){
@@ -275,7 +278,7 @@ What happens behind the scenes?
 
 First, before any `clean`-ing occurs, the parser does equivalent of the following:
 ```javascript
-if( props.commentDelim ) parser.line = parser.line.splice( props.commentDelim )[0];
+if( props.commentDelim ) parser.line = parser.line.split( props.commentDelim )[0];
 if( props.trim ) parser.line.trim();
 ```
 
@@ -294,7 +297,7 @@ four
 five
 >
 ```
-<a name='invalid'></a>
+
 *Note -* As mentioned above, all **_invalid_** lines are completely ignored by the Parser, even when considering **Line Index Exclusion** criteria.
 
 That means that adding the following Property into the above example:
@@ -314,6 +317,7 @@ The Parser starts at the 3rd **_valid_** line, even though it is actually the 4t
 
 This is also true for `last`, `count`, and `step`.
 
+---
 **Closing a File**
 
 A Parser can be forced to close by running the `parser.close()` function.  
@@ -343,7 +347,7 @@ three
 
 Running this will stop all line parsing, and call the input `close` function (and write the `out` file, if applicable).
 
-
+---
 **Other Functions**
 
 There are three more input functions:
@@ -383,7 +387,7 @@ Parsing Started...
 ...Parsing Finished
 >
 ```
-
+---
 **Other Properties**
 
 There are five more input properties:
@@ -397,7 +401,8 @@ There are five more input properties:
   * *Default :* `'\n'`
 * `eof` - The String to add to the end of the file (attached to the last line)
   * *Default :* `''`
-		
+  
+---
 ### Writing a file
 
 **Example**
@@ -420,7 +425,7 @@ The only difference between reading and writing a file is the `out` property and
 * `parser.write` - The function to add a line to the `out` file.  Input can be a string or array of strings
   * *Note -* `parser.write` still exists for `LineDriver.read()`, but it will not do anything.
 
-
+ 
 ## Settings
 
 Every `props` attribute listed above (except `in`, `out`, `last` and `count`) have a default value associated with them.  These default values can be changed.
@@ -441,15 +446,15 @@ LineDriver.settings( {
 	delimiter : ','
 } );
 ```
-
+---
 ## Templates
 
-Read about Templates in the API section, [here](#templates)
+Read about Templates in the API section, [here](#templates_api)
  
   
 ## API<a name="api"></a>
 
-### Settings
+### Settings<a name="settings_api"></a>
 
 The LineDriver module has default settings associated with it.  These default settings can be updated to your preference.
 
@@ -516,7 +521,7 @@ LineDriver.read( {
 	}
 } );
 ```
-
+---
 **Functions**
 
 There are six functions that the Parser recognizes and handles:
@@ -539,7 +544,7 @@ Every function has two inputs to it:
 * `parser` -The object that allows the function to interact with the state of the Parser
   * Some `parser` properties are only available in certain contexts. (See below)
   
-  
+---
 * **init**
 
 The parser object has the following attributes:
@@ -553,7 +558,7 @@ The parser object has the following attributes:
 		parser.write('Start of File');
 	}
 ```
-
+---
 * **clean**
 
 The parser object has the following attributes:
@@ -565,7 +570,7 @@ The parser object has the following attributes:
 		parser.line = parser.line.toLowerCase();
 	}
 ```
-
+---
 * **valid**
 
 The parser object has the following attributes:
@@ -583,8 +588,10 @@ The parser object has the following attributes:
 		parser.valid = parser.line.length > 3;
 	}
 ```
-
+---
 * **line**
+
+The parser object has the following attributes:
 * `line` - The line that the parser is currently handling
 * `index` - The object containing the index of the current line
   * `absolute` - The index of the current line from the start of the file, including invalid lines
@@ -595,7 +602,7 @@ The parser object has the following attributes:
     * count - Number of valid lines to check for
 	  * *Optional,* default = `step` Property
 * `goToLine` - The function to capture the next valid line
-  * Arguments
+  * Arguments:
     1. count - Spacing between current line and desired line
 	  * *Optional,* default = `step` Property
 	2. ignoreValid - Should the desired line not increase the valid line index?
@@ -619,8 +626,10 @@ The parser object has the following attributes:
 		if( parser.line === 'thats all folks' ) parser.close();
 	}
 ```
-
+---
 * **close**
+
+The parser object has the following attributes:
 * `write` - The function to add a line to the out file.  Input can be a string or array of strings
   * This is only used by `LineDriver.write`
 
@@ -630,19 +639,19 @@ The parser object has the following attributes:
 		parser.write('End of file');
 	}
 ```
-
+---
 * **write**
 ```javascript
 	write : function( props, parser ){
 		console.log('Done writing the file.');
 	}
 ```
-
+---
 **Properties**
 
 The properties are any settings which you would like to override the default value of.
 
-In additional to the settings listed above, the Parser can recognize these additional settings:
+In additional to the settings listed [above](#settings_api), the Parser can recognize these additional settings:
 
 * `in` - The path to the file to be read (using `fs.readFile`)
   * **_Required_**
@@ -654,7 +663,8 @@ In additional to the settings listed above, the Parser can recognize these addit
   
 *Note -* Any additional data can be attached to the properties object and can be shared 
 
-**Templates** <a name='templates'></a>
+---
+**Templates** <a name='templates_api'></a>
 
 Templates can be used to create default values for properties or functions.
 
@@ -665,7 +675,7 @@ Let's create a template for parsing `.csv` files and assume that `example.txt` l
 3|	X,XX,XY
 ```
 
-Lets assume we want to create a template that parses the above table, and then only sends the 'cells' to the `line` function
+Let's assume we want to create a template that parses the above table, and then only sends the 'cells' to the `line` function
 
 ```javascript
 LineDriver.template('table', {
@@ -710,7 +720,7 @@ LineDriver.template('table', {
   * `absolute` - The index of the current line from the start of the file, including invalid lines
   * `valid` - The index of the current line from the first valid line, excluding invalid lines
 
-Now lets use that template:
+Now let's use that template:
   
 ```javascript
 LineDriver.read({

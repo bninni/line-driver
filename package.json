@@ -1,6 +1,6 @@
 {
   "name": "line-driver",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A simple configurable module to read or write files line by line.",
   "main": "index.min.js",
   "scripts": {

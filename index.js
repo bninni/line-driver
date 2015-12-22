@@ -13,6 +13,8 @@ Freeze the parser object
 
 parser.previousLine and goToline( -1 )?
 
+Remove the 'handler' functions, it can be done in the line function
+
 All opts and props reference should be set to variables at the start
 
 Allow first, last, step, count to be changed dynamically?
