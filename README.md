@@ -23,11 +23,11 @@ var LineDriver = require('line-driver');
 
 For all of the examples, let's pretend that `example.txt` consists of the following:
 ```
-1|	one
-2|	two
-3|	three
-4|	four
-5|	five
+1|  one
+2|  two
+3|  three
+4|  four
+5|  five
 ```
 ---
 ### Reading a file
@@ -35,12 +35,12 @@ For all of the examples, let's pretend that `example.txt` consists of the follow
 **Simple Example**
 ```javascript
 LineDriver.read( {
-	line : function( props, parser ){
-		console.log( parser.line );
-	},
-	props : {
-		in : 'path/to/example.txt'
-	}
+  line : function( props, parser ){
+    console.log( parser.line );
+  },
+  props : {
+    in : 'path/to/example.txt'
+  }
 } );
 ```
 
@@ -82,13 +82,13 @@ There are four input properties that define which lines are sent to the `line` f
 
 ```javascript
 LineDriver.read( {
-	line : function( props, parser ){
-		console.log( parser.line );
-	},
-	props : {
-		in : 'path/to/example.txt',
-		first : 2
-	}
+  line : function( props, parser ){
+    console.log( parser.line );
+  },
+  props : {
+    in : 'path/to/example.txt',
+    first : 2
+  }
 } );
 ```
 
@@ -106,13 +106,13 @@ five
 
 ```javascript
 LineDriver.read( {
-	line : function( props, parser ){
-		console.log( parser.line );
-	},
-	props : {
-		in : 'path/to/example.txt',
-		last : 4
-	}
+  line : function( props, parser ){
+    console.log( parser.line );
+  },
+  props : {
+    in : 'path/to/example.txt',
+    last : 4
+  }
 } );
 ```
 
@@ -130,14 +130,14 @@ four
 
 ```javascript
 LineDriver.read( {
-	line : function( props, parser ){
-		console.log( parser.line );
-	},
-	props : {
-		in : 'path/to/example.txt',
-		first : 2,
-		count : 3
-	}
+  line : function( props, parser ){
+    console.log( parser.line );
+  },
+  props : {
+    in : 'path/to/example.txt',
+    first : 2,
+    count : 3
+  }
 } );
 ```
 
@@ -154,13 +154,13 @@ four
 
 ```javascript
 LineDriver.read( {
-	line : function( props, parser ){
-		console.log( parser.line );
-	},
-	props : {
-		in : 'path/to/example.txt',
-		step : 2
-	}
+  line : function( props, parser ){
+    console.log( parser.line );
+  },
+  props : {
+    in : 'path/to/example.txt',
+    step : 2
+  }
 } );
 ```
 
@@ -186,15 +186,15 @@ There are two input functions that can access `parser.line` before it gets sent 
 
 ```javascript
 LineDriver.read( {
-	line : function( props, parser ){
-		console.log( parser.line );
-	},
-	valid : function( props, parser ){
-		parser.valid = parser.line.length > 3;
-	},
-	props : {
-		in : 'path/to/example.txt',
-	}
+  line : function( props, parser ){
+    console.log( parser.line );
+  },
+  valid : function( props, parser ){
+    parser.valid = parser.line.length > 3;
+  },
+  props : {
+    in : 'path/to/example.txt',
+  }
 } );
 ```
 
@@ -217,18 +217,18 @@ five
 
 ```javascript
 LineDriver.read( {
-	line : function( props, parser ){
-		console.log( parser.line );
-	},
-	clean : function( props, parser ){
-		parser.line = parser.line.slice(1);
-	},
-	valid : function( props, parser ){
-		parser.valid = parser.line.length > 3;
-	},
-	props : {
-		in : 'path/to/example.txt',
-	}
+  line : function( props, parser ){
+    console.log( parser.line );
+  },
+  clean : function( props, parser ){
+    parser.line = parser.line.slice(1);
+  },
+  valid : function( props, parser ){
+    parser.valid = parser.line.length > 3;
+  },
+  props : {
+    in : 'path/to/example.txt',
+  }
 } );
 ```
 
@@ -250,27 +250,27 @@ There are also three input properties that can allow for automatic cleaning and 
 
 In the following example, let's assume that that `example.txt` now looks like the following:
 ```
-1|	one
+1|  one
 2|
-3|	two		#comment?
-4|		three
-5|	four
-6|	#another comment:
-7|	five
+3|  two    #comment?
+4|    three
+5|  four
+6|  #another comment:
+7|  five
 ```
 
 Now let's use the above properties:
 ```javascript
 LineDriver.read( {
-	line : function( props, parser ){
-		console.log( parser.line );
-	},
-	props : {
-		in : 'path/to/example.txt',
-		commentDelim : '#',
-		trim : true,
-		ignoreEmpty : true
-	}
+  line : function( props, parser ){
+    console.log( parser.line );
+  },
+  props : {
+    in : 'path/to/example.txt',
+    commentDelim : '#',
+    trim : true,
+    ignoreEmpty : true
+  }
 } );
 ```
 
@@ -324,13 +324,13 @@ A Parser can be forced to close by running the `parser.close()` function.
 
 ```javascript
 LineDriver.read( {
-	line : function( props, parser ){
-		console.log( parser.line );
-		if( parser.line === 'three' ) parser.close();
-	},
-	props : {
-		in : 'path/to/example.txt',
-	}
+  line : function( props, parser ){
+    console.log( parser.line );
+    if( parser.line === 'three' ) parser.close();
+  },
+  props : {
+    in : 'path/to/example.txt',
+  }
 } );
 ```
 
@@ -360,18 +360,18 @@ Let's again assume that `example.txt` is back to its original state.
 
 ```javascript
 LineDriver.read( {
-	init : function( props, parser ){
-		console.log('Parsing Started...');
-	},
-	line : function( props, parser ){
-		console.log( '\t' + parser.line );
-	},
-	close : function( props, parser ){
-		console.log('...Parsing Finished');
-	},
-	props : {
-		in : 'path/to/example.txt'
-	}
+  init : function( props, parser ){
+    console.log('Parsing Started...');
+  },
+  line : function( props, parser ){
+    console.log( '\t' + parser.line );
+  },
+  close : function( props, parser ){
+    console.log('...Parsing Finished');
+  },
+  props : {
+    in : 'path/to/example.txt'
+  }
 } );
 ```
 
@@ -379,11 +379,11 @@ And the console will look like this:
 
 ```
 Parsing Started...
-	one
-	two
-	three
-	four
-	five
+  one
+  two
+  three
+  four
+  five
 ...Parsing Finished
 >
 ```
@@ -408,13 +408,13 @@ There are five more input properties:
 **Example**
 ```javascript
 LineDriver.write( {
-	line : function( props, parser ){
-		parser.write( parser.line );
-	},
-	props : {
-		in : 'path/to/example.txt',
-		out : 'path/to/new/file.txt'
-	}
+  line : function( props, parser ){
+    parser.write( parser.line );
+  },
+  props : {
+    in : 'path/to/example.txt',
+    out : 'path/to/new/file.txt'
+  }
 } );
 ```
 
@@ -433,17 +433,17 @@ Every `props` attribute listed above (except `in`, `out`, `last` and `count`) ha
 Let's assume that our program will only be parsing files that look like this:
 
 ```
-1|	  one  :  1  ,  two  :  2  ,  three  :  3  ,  four  :  4  ,  five  :  5  
+1|    one  :  1  ,  two  :  2  ,  three  :  3  ,  four  :  4  ,  five  :  5  
 ```
 
 If we only wanted to capture the keys from these files, then the default settings can be updated as follows:
 
 ```javascript
 LineDriver.settings( {
-	commentDelim : ':',
-	trim : true,
-	ignoreEmpty : true,
-	delimiter : ','
+  commentDelim : ':',
+  trim : true,
+  ignoreEmpty : true,
+  delimiter : ','
 } );
 ```
 ---
@@ -456,7 +456,7 @@ Read about Templates in the API section, [here](#templates_api)
 
 ### Settings<a name="settings_api"></a>
 
-The LineDriver module has default settings associated with it.  These default settings can be updated to your preference.
+The `LineDriver` module has default settings associated with it.  These default settings can be updated to your preference.
 
 ```javascript
 LineDriver.settings( { opts } )
@@ -513,12 +513,12 @@ In this example:
 
 ```javascript
 LineDriver.read( {
-	line : function( props, parser ){
-		console.log( parser.line );
-	},
-	props : {
-		in : 'path/to/example.txt'
-	}
+  line : function( props, parser ){
+    console.log( parser.line );
+  },
+  props : {
+    in : 'path/to/example.txt'
+  }
 } );
 ```
 ---
@@ -553,10 +553,10 @@ The parser object has the following attributes:
   * This is only used by `LineDriver.write`
 
 ```javascript
-	init : function( props, parser ){
-		console.log('Began parsing the file.');
-		parser.write('Start of File');
-	}
+  init : function( props, parser ){
+    console.log('Began parsing the file.');
+    parser.write('Start of File');
+  }
 ```
 ---
 * **clean**
@@ -565,10 +565,10 @@ The parser object has the following attributes:
 * `line` - The line that the parser is currently handling
 
 ```javascript
-	clean : function( props, parser ){
-		//to make sure every line is lowercase
-		parser.line = parser.line.toLowerCase();
-	}
+  clean : function( props, parser ){
+    //to make sure every line is lowercase
+    parser.line = parser.line.toLowerCase();
+  }
 ```
 ---
 * **valid**
@@ -583,10 +583,10 @@ The parser object has the following attributes:
     * For more info, see an example [here](#invalid)
 
 ```javascript
-	valid : function( props, parser ){
-		//to ignore lines that are three characters or less
-		parser.valid = parser.line.length > 3;
-	}
+  valid : function( props, parser ){
+    //to ignore lines that are three characters or less
+    parser.valid = parser.line.length > 3;
+  }
 ```
 ---
 * **line**
@@ -600,13 +600,13 @@ The parser object has the following attributes:
 * `hasNextLine` - The function to see if there are any valid lines left in the file
   * Arguments:
     * count - Number of valid lines to check for
-	  * *Optional,* default = `step` Property
+    * *Optional,* default = `step` Property
 * `goToLine` - The function to capture the next valid line
   * Arguments:
     1. count - Spacing between current line and desired line
-	  * *Optional,* default = `step` Property
-	2. ignoreValid - Should the desired line not increase the valid line index?
-	  * *Optional,* default = `false`
+    * *Optional,* default = `step` Property
+  2. ignoreValid - Should the desired line not increase the valid line index?
+    * *Optional,* default = `false`
 * `nextLine` - The next line in the file
   * Invoking this will update the `line` and `index` values to represent the next line
   * Since this internally updates the current line, the parser will not send that line to the `line` function on the next pass
@@ -614,17 +614,17 @@ The parser object has the following attributes:
   * This is only used by `LineDriver.write`
 
 ```javascript
-	line : function( props, parser ){
-		console.log('Line : ' + parser.line);
-		
-		if( parser.hasNextLine() ){
-			console.log('Next Line : ' + parser.nextLine);
-			//parser.line has been updated to the new line since we accessed parser.nextLine
-			console.log('Line -> Next Line : ' + parser.line);
-		}
-		
-		if( parser.line === 'thats all folks' ) parser.close();
-	}
+  line : function( props, parser ){
+    console.log('Line : ' + parser.line);
+    
+    if( parser.hasNextLine() ){
+      console.log('Next Line : ' + parser.nextLine);
+      //parser.line has been updated to the new line since we accessed parser.nextLine
+      console.log('Line -> Next Line : ' + parser.line);
+    }
+    
+    if( parser.line === 'thats all folks' ) parser.close();
+  }
 ```
 ---
 * **close**
@@ -634,17 +634,17 @@ The parser object has the following attributes:
   * This is only used by `LineDriver.write`
 
 ```javascript
-	close : function( props, parser ){
-		console.log('Done parsing the file.');
-		parser.write('End of file');
-	}
+  close : function( props, parser ){
+    console.log('Done parsing the file.');
+    parser.write('End of file');
+  }
 ```
 ---
 * **write**
 ```javascript
-	write : function( props, parser ){
-		console.log('Done writing the file.');
-	}
+  write : function( props, parser ){
+    console.log('Done writing the file.');
+  }
 ```
 ---
 **Properties**
@@ -670,47 +670,47 @@ Templates can be used to create default values for properties or functions.
 
 Let's create a template for parsing `.csv` files and assume that `example.txt` looks like the following:
 ```
-1|	,X,Y
+1|  ,X,Y
 2|  X,XX,XY
-3|	X,XX,XY
+3|  X,XX,XY
 ```
 
 Let's assume we want to create a template that parses the above table, and then only sends the 'cells' to the `line` function
 
 ```javascript
 LineDriver.template('table', {
-	//use the props object to store data
-	init : function( next, props, parser ){
-		props.table = [];
-		props.titles = {
-			rows : [],
-			cols : []
-		};
-		next();
-	},
-	line : function( next, props, parser ){
-		//turn the row into an array of cells
-		var rowTitle,
-			row = parser.line.split(',');
-		
-		//the first cell contains the row title
-		rowTitle = row.splice(0,1)[0];
-		
-		//the first row contains the column titles
-		if( parser.index.valid === 1 ) props.titles.cols = row;
-		else{
-			props.titles.rows.push( rowTitle );
-			//send each cell to the line function
-			row.forEach(function( value, i ){
-				props.currentCell = {
-					value : value,
-					col : i,
-					row : parser.index.valid - 1
-				};
-				next();
-			});
-		}
-	}
+  //use the props object to store data
+  init : function( next, props, parser ){
+    props.table = [];
+    props.titles = {
+      rows : [],
+      cols : []
+    };
+    next();
+  },
+  line : function( next, props, parser ){
+    //turn the row into an array of cells
+    var rowTitle,
+      row = parser.line.split(',');
+    
+    //the first cell contains the row title
+    rowTitle = row.splice(0,1)[0];
+    
+    //the first row contains the column titles
+    if( parser.index.valid === 1 ) props.titles.cols = row;
+    else{
+      props.titles.rows.push( rowTitle );
+      //send each cell to the line function
+      row.forEach(function( value, i ){
+        props.currentCell = {
+          value : value,
+          col : i,
+          row : parser.index.valid - 1
+        };
+        next();
+      });
+    }
+  }
 } );
 ```
 
@@ -724,23 +724,23 @@ Now let's use that template:
   
 ```javascript
 LineDriver.read({
-	line : function(args, parser){
-		var value = props.currentCell.value,
-			colTitle = props.titles.cols[props.currentCell.row],
-			rowTitle = props.titles.rows[props.currentCell.col];
-			
-		console.log( rowTitle + ' + ' + colTitle + ' = ' + value );
-	},
-	props : {
-		in : 'path/to/example.txt'
-	},
-	template : ['table']
+  line : function(args, parser){
+    var value = props.currentCell.value,
+      colTitle = props.titles.cols[props.currentCell.row],
+      rowTitle = props.titles.rows[props.currentCell.col];
+      
+    console.log( rowTitle + ' + ' + colTitle + ' = ' + value );
+  },
+  props : {
+    in : 'path/to/example.txt'
+  },
+  template : ['table']
 })
 ```
 
 * `template` - An array of names of templates to use when parsing the `in` file.
   * *Note -* If more than one template name exists, the `next()` function will called the corresponding function in the next template in the list
-	* The first template called is index 0
+  * The first template called is index 0
     * Once no more templates exist, then the corresponding input function will be called
 
 Running the above function and template will produce a console that looks like the following:
@@ -760,7 +760,7 @@ Templates give you some freedom on how data gets sent to the final function.  Fo
 ```javascript
 //send each cell to the line function
 row.forEach(function( value, i ){
-	props.handleCell(value, i, parser.index.valid - 1);
+  props.handleCell(value, i, parser.index.valid - 1);
 });
 ```
 
@@ -768,16 +768,16 @@ And it can be used in the following manner:
  
 ```javascript
 LineDriver.read({
-	props : {
-		in : 'path/to/example.txt',
-		handleCell : function(value, col, row){
-			var colTitle = props.titles.cols[row],
-				rowTitle = props.titles.rows[col];
-				
-			console.log( rowTitle + ' + ' + colTitle + ' = ' + value );
-		},
-	},
-	template : ['table']
+  props : {
+    in : 'path/to/example.txt',
+    handleCell : function(value, col, row){
+      var colTitle = props.titles.cols[row],
+        rowTitle = props.titles.rows[col];
+        
+      console.log( rowTitle + ' + ' + colTitle + ' = ' + value );
+    },
+  },
+  template : ['table']
 })
 ```
 
