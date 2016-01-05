@@ -28,7 +28,7 @@ function test( desc, opts ){
 	
 	console.log('Before Test : ' + desc);
 	
-	opts.props.in = 'test1.txt';
+	opts.in = 'test1.txt';
 	
 	opts.init = function(){
 		console.log("Opening Test : " + desc);
@@ -116,7 +116,7 @@ test("First is 2, step is 2, count is 4, after second line shift by 1",{
 
 test("Don't capture index 5, end at index 8",{
 	line : function( props, parser ){
-		if( parser.index.valid === 4 ){ console.log('stepping: ' + parser.nextLine) };
+		if( parser.index.valid === 4 ){ console.log('skipping: ' + parser.nextLine) };
 	},
 	props : {
 		last : 8,
@@ -125,7 +125,7 @@ test("Don't capture index 5, end at index 8",{
 
 test("Don't capture index 5, count is 8",{
 	line : function( props, parser ){
-		if( parser.index.valid === 4 ){ console.log('stepping: ' + parser.nextLine) };
+		if( parser.index.valid === 4 ){ console.log('skipping: ' + parser.nextLine) };
 	},
 	props : {
 		count : 8,
@@ -134,7 +134,7 @@ test("Don't capture index 5, count is 8",{
 
 test("Don't count index 5 as valid, count is 7",{
 	line : function( props, parser ){
-		if( parser.index.valid === 4 ){ console.log('stepping: ' + parser.goToLine(1,true) ) };
+		if( parser.index.valid === 4 ){ console.log('skipping: ' + parser.goToLine(1,true) ) };
 	},
 	props : {
 		count : 7,

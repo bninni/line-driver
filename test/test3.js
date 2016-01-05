@@ -9,7 +9,7 @@ function write( desc, opts ){
 	
 	console.log('Before Test : ' + desc);
 	
-	opts.props.in = 'test2.csv';
+	opts.props.in = 'https://raw.githubusercontent.com/bninni/line-driver/master/test/test2.csv';
 	opts.props.out = 'test3out.txt';
 	
 	LineDriver.write(opts);
@@ -26,11 +26,11 @@ LineDriver.template('table',{
 		props.current = {};
 		next();
 	},
-	handler : function( props, parser ){
+	line : function( next, props, parser ){
 		var colHead, row;
 		
-		while( parser.hasNextLine() ){
-			row = parser.nextLine.split(',');
+		do{
+			row = parser.line.split(',');
 			
 			colHead = row.splice(0,1)[0];
 			
@@ -45,10 +45,10 @@ LineDriver.template('table',{
 				row.forEach(function(cell, i){
 					props.current.cell = cell;
 					props.current.col = i;
-					parser.sendLine();
+					next();
 				});
 			}
-		}
+		} while( parser.nextLine )
 	}
 });
 

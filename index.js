@@ -4,28 +4,50 @@ Author	: Brian Ninni
 Website	: ninni.io
 Email	: brian@ninni.io
 License	: MIT
-=========================================
+===========================================
+Todo:
+
+Allow absolute inputs for first, last, count, step, range
+
+Allow range input
+	range : [1,5]
+	or
+	range : [[1,5],[6,10]]
+
+Handle redirect for http/https
+
+LineDriver({opts}), will only write if there is an 'out' path
+
+Update README:
+	-indices in the clean and valid functions
+		-User will just have to know that the validIndex refers to the index of the line that was last sent
+	-move in/out outside of the props obj
+	-http/https
+	-absolute input lines
+	-LineDriver({opts})
+	
 Detailed Comments 
+=========================================
+Future:
 
-Send 'index' to the clean and valid functions?  User will just have to know that the validIndex refers to the index of the line that was last sent
+Write to http/https using POST?
 
-Freeze the parser object
+parser.previousLine and goToline( -1 )
+	-also remember to update the index values
 
-parser.previousLine and goToline( -1 )?
+Allow first, last, step, count to be changed dynamically
+-or, allow them to be functions
+	-also allow path, etc, to be functions? arrays?
 
-Remove the 'handler' functions, it can be done in the line function
+Templates should be able to reference other templates
 
-All opts and props reference should be set to variables at the start
-
-Allow first, last, step, count to be changed dynamically?
-
-Should templates be able to include other templates?
-
-Error checking on invalid inputs?
+Error checking on invalid inputs
 
 Add in Compare function
 *****/
 var fs = require('fs'),
+	http = require('http'),
+	https = require('https'),
 	readFile = fs.readFile,
 	readFileSync = fs.readFileSync,
 	writeFile = fs.writeFile,
@@ -69,14 +91,24 @@ line	:	the function which will receive the line and do whatever it wants with it
 close	:	the function to run when lines stop being read (either by the stop function returning true or the lines array depleting)
 *****/
 function parse( opts, data, write ){
-	var str, step, first, last, count, lines, handler, commentDelim, trim, ignoreEmpty,
+	var str,
+		prevLines = [],
 		out = [],
 		closed = false,
-		opts = opts || {},
-		props = opts.props || {},
+		props = opts.props,
+		step = props.step,
+		first = props.first = Math.max(0, props.first-1),
+		last = props.last,
+		count = props.count,
+		lines = data.split( props.delimiter),
+		commentDelim = props.commentDelim,
+		trim = props.trim,
+		ignoreEmpty = props.ignoreEmpty,
+		join = props.join,
+		eof = props.eof,
 		index = 0,
 		validIndex = 0,
-		template = opts.template ? opts.template.slice() : [],
+		template = opts.template.slice(),
 		indices = {},
 		writer = {},
 		parser = {
@@ -128,46 +160,18 @@ function parse( opts, data, write ){
 			},
 		});
 		
-		//add the default template to the front of array if it isn't already there
-		if( template.indexOf('default') === -1 ) addFirst(template,'default');
-
-		for( key in Settings ) obj[key] = Settings[key];
-		
-		//to update the default props
-		template.forEach(function(name){
-			var temp, tempProps;
-				
-			temp = Templates[name];
-			if( !temp ) return;
-
-			if( temp.handler ) handler = temp.handler;
-			
-			tempProps = temp.props || {};
-			for( key in tempProps ) obj[key] = tempProps[key];
-		});
-		
-		if( opts.handler ) handler = opts.handler;
-		
-		for( key in props ) obj[key] = props[key];
-
-		lines = data.split( obj.delimiter );
-		
-		step = obj.step;
-		first = obj.first = Math.max(0, obj.first-1);
-		last = obj.last;
-		count = obj.count;
-
-		commentDelim = obj.commentDelim;
-		trim = obj.trim;
-		ignoreEmpty = obj.ignoreEmpty;
-		
-		props = obj;
+		Object.freeze( parser );
+		Object.freeze( indices );
 	}
 
 	function addLine( str ){
-		if( str === undefined || str === null ) return;
-		if( str.constructor === Array ) return str.forEach(addLine);
-		out.push(str);
+		var args = Array.prototype.slice.apply(arguments);
+		
+		args.forEach( function forEach( str ){
+			if( str === undefined || str === null ) return;
+			if( str.constructor === Array ) return str.forEach(forEach);
+			out.push(str);
+		});
 	}
 	
 	function run( name, arg ){
@@ -188,13 +192,16 @@ function parse( opts, data, write ){
 	function tryClose(){
 		if( closed ) return;
 		run('close', writer);
-		if( write ) write( out.join( props.join || Settings.join ) + props.eof, function(){
+		if( write ) write( out.join( join ) + eof, function(){
 			run('write')
 		});
 	}
 
 	function clean( str ){
 		var obj = {};
+		Object.defineProperty( obj, 'index', {
+			get : function(){return indices;}
+		});
 		if( commentDelim ) str = str.split( commentDelim )[0];
 		if( trim ) str = str.trim();
 		obj.line = str;
@@ -213,6 +220,10 @@ function parse( opts, data, write ){
 			valid : true
 		};
 		
+		Object.defineProperty( obj, 'index', {
+			get : function(){return indices;}
+		});
+		
 		if( ignoreEmpty && !str ) return false;
 		
 		run('valid', obj );
@@ -227,6 +238,8 @@ function parse( opts, data, write ){
 		
 		while( !closed && i && canContinue() ){
 			str = getFirst(lines);
+			
+			prevLines.push(str);
 			
 			if( !isString( str ) ) break;
 			
@@ -272,35 +285,63 @@ function parse( opts, data, write ){
 		//remove up to the first line
 		while( i-- ) nextLine(1,true);
 		
-		if( handler ){
-			Object.defineProperties( parser , {
-				sendLine : {
-					value : line
-				}
-			});
-			handler( props, parser );
-		}
-		else{
-			//handle the first line
-			if( isString( nextLine(1) ) ) line();
-			
-			//go through every line in the array or until it reaches the end index
-			while( isString( nextLine() ) ) line();
-		}
+		//handle the first line
+		if( isString( nextLine(1) ) ) line();
+		
+		//go through every line in the array or until it reaches the end index
+		while( isString( nextLine() ) ) line();
+
 		tryClose();
 	}
 	
 	start();
 };
 
+function get( opts, path, getter, write ){
+	getter.get( path, function (res) {
+		var file = '';
+		res.on('data', function(chunk) {
+			file += chunk;
+		});
+		res.on('end', function() {
+			parse( opts, file, write )
+		});
+	});
+};
+
+function flattenProps( props, template ){
+	var key,
+		props = props || {},
+		ret = {};
+	
+	for( key in Settings ) ret[key] = Settings[key];
+	
+	//add the default template to the front of array if it isn't already there
+	if( template.indexOf('default') === -1 ) addFirst(template,'default');
+		
+	//to update the default props
+	template.forEach(function(name){
+		var temp, tempProps;
+			
+		temp = Templates[name];
+		if( !temp || !(tempProps = temp.props) ) return;
+		
+		for( key in tempProps ) ret[key] = tempProps[key];
+	});
+	
+	for( key in props ) ret[key] = props[key];
+	
+	return ret;
+};
+
 function apply( opts, write ){
 	var opts = opts || {},
-		props = opts.props || {},
-		path = props.in,
-		out = props.out || path,
+		props = opts.props = flattenProps(opts.props, opts.template = opts.template || []),
+		path = opts.in || props.in,
+		out = opts.out || props.out || path,
 		sync = 'sync' in props ? props.sync : Settings.sync,
 		encoding = props.encoding || Settings.encoding;
-	
+			
 	if( !path ) return;
 	
 	if( write ) write = sync ? function( data, callback ){
@@ -309,6 +350,9 @@ function apply( opts, write ){
 	} : function( data, callback ){
 		writeFile(out, data, callback);
 	};
+	
+	if( path.startsWith('http://') ) return get( opts, path, http, write );
+	else if( path.startsWith('https://') ) return get( opts, path, https, write );
 	
 	if( sync ) return parse( opts, readFileSync( path, encoding ), write );
 	

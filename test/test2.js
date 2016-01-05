@@ -27,8 +27,8 @@ function write( desc, opts ){
 	
 	opts.props.in = 'test2.csv';
 	opts.props.out = 'test2out.txt';
-	opts.props.join = ',\n';
-	opts.props.eof = ',\n';
+	opts.props.join = '\n';
+	opts.props.eof = '\n';
 	opts.props.sync = true;
 	
 	LineDriver.write(opts);

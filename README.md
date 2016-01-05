@@ -75,7 +75,7 @@ There are four input properties that define which lines are sent to the `line` f
 * `step` - Spacing betweens captured lines
   * *Default :* `1`
 
-*Note -* All of these can be used independently from each other.
+*Note -* All of these can be used independently from or in conjunction with each other.
 
 ---
 * **first**
@@ -238,7 +238,7 @@ Only lines where the the `clean`-ed `parser.line` is longer than three character
 hree
 >
 ```
-
+---
 There are also three input properties that can allow for automatic cleaning and validation of `parser.line`
 
 * `commentDelim` - The character which indicates the start of a comment
@@ -450,10 +450,9 @@ LineDriver.settings( {
 ## Templates
 
 Read about Templates in the API section, [here](#templates_api)
- 
-  
+--- 
 ## API<a name="api"></a>
-
+---
 ### Settings<a name="settings_api"></a>
 
 The `LineDriver` module has default settings associated with it.  These default settings can be updated to your preference.
@@ -489,9 +488,11 @@ The default settings and values are:
 * `trim` - Whether or not surrounding whitespace should be removed from the string
   * *Default :* `false`
 
+---
+  
 ### Reading and Writing
 
-The LineDrive module can read or write a file using the following:
+The LineDriver module can read or write a file using the following:
 ```javascript
 LineDriver.read( { opts } )
 ```
@@ -599,14 +600,14 @@ The parser object has the following attributes:
 * `close` - The function to stop parsing lines and call the `close` and `write` functions (if applicable)
 * `hasNextLine` - The function to see if there are any valid lines left in the file
   * Arguments:
-    * count - Number of valid lines to check for
-    * *Optional,* default = `step` Property
+    * `count` - Number of valid lines to check for
+      * *Optional,* default = `step` Property
 * `goToLine` - The function to capture the next valid line
   * Arguments:
-    1. count - Spacing between current line and desired line
-    * *Optional,* default = `step` Property
-  2. ignoreValid - Should the desired line not increase the valid line index?
-    * *Optional,* default = `false`
+    1. `count` - Spacing between current line and desired line
+      * *Optional,* default = `step` Property
+    2. `ignoreValid` - Should the desired line not increase the valid line index?
+      * *Optional,* default = `false`
 * `nextLine` - The next line in the file
   * Invoking this will update the `line` and `index` values to represent the next line
   * Since this internally updates the current line, the parser will not send that line to the `line` function on the next pass
@@ -656,7 +657,7 @@ In additional to the settings listed [above](#settings_api), the Parser can reco
 * `in` - The path to the file to be read (using `fs.readFile`)
   * **_Required_**
 * `out` - The path to the file to be written (using `fs.writeFile`)
-  * *Optional* - If no `props.out` path is given, it write back to the `in` path
+  * *Optional* - default = `in` path
   * This is only used by `LineDriver.write`
 * `last` - The index of the last line to capture
 * `count` - How many total lines to capture
@@ -760,7 +761,7 @@ Templates give you some freedom on how data gets sent to the final function.  Fo
 ```javascript
 //send each cell to the line function
 row.forEach(function( value, i ){
-  props.handleCell(value, i, parser.index.valid - 1);
+  props.handleCell(value, props.titles.cols[i], rowTitle);
 });
 ```
 
@@ -770,10 +771,7 @@ And it can be used in the following manner:
 LineDriver.read({
   props : {
     in : 'path/to/example.txt',
-    handleCell : function(value, col, row){
-      var colTitle = props.titles.cols[row],
-        rowTitle = props.titles.rows[col];
-        
+    handleCell : function(value, colTitle, rowTitle){
       console.log( rowTitle + ' + ' + colTitle + ' = ' + value );
     },
   },
