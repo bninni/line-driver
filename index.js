@@ -116,10 +116,7 @@ function parse( opts, data, write ){
 		};
 		
 	function setup(){
-		
-		var key,
-			obj = {};
-		
+				
 		Object.defineProperties( writer, {
 			write : {
 				value : addLine,
