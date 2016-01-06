@@ -1,6 +1,10 @@
 # Changelog
 
-## 1.1.0
+## 1.1.2
+
+* Handle redirect for http/https
+
+## 1.1.1
 
 * Froze the parser and parser.index objects
 * Sent parser.index object to clean and valid functions

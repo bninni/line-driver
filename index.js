@@ -8,15 +8,12 @@ License	: MIT
 Todo:
 
 Allow absolute inputs for first, last, count, step, range
+	- mode : 'absolute' or 'valid'
 
 Allow range input
 	range : [1,5]
 	or
 	range : [[1,5],[6,10]]
-
-Handle redirect for http/https
-
-LineDriver({opts}), will only write if there is an 'out' path
 
 Update README:
 	-indices in the clean and valid functions
@@ -35,6 +32,9 @@ Write to http/https using POST?
 parser.previousLine and goToline( -1 )
 	-also remember to update the index values
 
+parser.isLastLine (boolean)
+parser.linesRemaining (int)
+	
 Allow first, last, step, count to be changed dynamically
 -or, allow them to be functions
 	-also allow path, etc, to be functions? arrays?
@@ -48,11 +48,13 @@ Add in Compare function
 var fs = require('fs'),
 	http = require('http'),
 	https = require('https'),
+	url = require('url'),
 	readFile = fs.readFile,
 	readFileSync = fs.readFileSync,
 	writeFile = fs.writeFile,
 	writeFileSync = fs.writeFileSync,
 	Settings = {
+		maxRedirects : 5,
 		encoding : 'utf8',
 		delimiter : new RegExp('\r\n?|\r?\n'),
 		join : '\n',
@@ -161,7 +163,7 @@ function parse( opts, data, write ){
 		Object.freeze( indices );
 	}
 
-	function addLine( str ){
+	function addLine(){
 		var args = Array.prototype.slice.apply(arguments);
 		
 		args.forEach( function forEach( str ){
@@ -294,9 +296,20 @@ function parse( opts, data, write ){
 	start();
 };
 
-function get( opts, path, getter, write ){
+function get( opts, path, write, count ){
+	var getter = path.startsWith('https://') ? https : http;
+	
+	if( count >= opts.props.maxRedirects ) return;
+	
 	getter.get( path, function (res) {
 		var file = '';
+		
+		//handle a redirect
+		if (res.statusCode >= 300 && res.statusCode < 400 && 'location' in res.headers){
+			path = url.resolve(path, res.headers.location);
+			return get( opts, path, write, ++count );
+		}
+		
 		res.on('data', function(chunk) {
 			file += chunk;
 		});
@@ -348,8 +361,7 @@ function apply( opts, write ){
 		writeFile(out, data, callback);
 	};
 	
-	if( path.startsWith('http://') ) return get( opts, path, http, write );
-	else if( path.startsWith('https://') ) return get( opts, path, https, write );
+	if( path.startsWith('http://') || path.startsWith('https://') ) return get( opts, path, write, 0 );
 	
 	if( sync ) return parse( opts, readFileSync( path, encoding ), write );
 	
