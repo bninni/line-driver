@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.3
+
+* Added `parser.index` to the clean and valid functions
+* `in` and `out` can now exist outside of the props object
+* Added in `absolute` and `range` properties
+
 ## 1.1.2
 
 * Handle redirect for http/https

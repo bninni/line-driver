@@ -4,31 +4,17 @@ Author	: Brian Ninni
 Website	: ninni.io
 Email	: brian@ninni.io
 License	: MIT
-===========================================
-Todo:
-
-Allow absolute inputs for first, last, count, step, range
-	- mode : 'absolute' or 'valid'
-
-Allow range input
-	range : [1,5]
-	or
-	range : [[1,5],[6,10]]
-
-Update README:
-	-indices in the clean and valid functions
-		-User will just have to know that the validIndex refers to the index of the line that was last sent
-	-move in/out outside of the props obj
-	-http/https
-	-absolute input lines
-	-LineDriver({opts})
-	
-Detailed Comments 
 =========================================
-Future:
+TODO:
+	
+Don't use nseted functions
+	
+Combine 'clean' and 'valid'
+	-just let the 'valid' function modify the 'line'
 
-Write to http/https using POST?
-
+Separate function to run before and after a range of lines is processed?
+	(init and close are only run once, but before and after are run for each range?)
+	
 parser.previousLine and goToline( -1 )
 	-also remember to update the index values
 
@@ -43,7 +29,7 @@ Templates should be able to reference other templates
 
 Error checking on invalid inputs
 
-Add in Compare function
+Write to http/https using POST?
 *****/
 var fs = require('fs'),
 	http = require('http'),
@@ -64,6 +50,7 @@ var fs = require('fs'),
 		trim : false,
 		commentDelim : '',
 		ignoreEmpty : false,
+		absolute : false,
 		sync : false
 	},
 	Templates = {};
@@ -93,16 +80,18 @@ line	:	the function which will receive the line and do whatever it wants with it
 close	:	the function to run when lines stop being read (either by the stop function returning true or the lines array depleting)
 *****/
 function parse( opts, data, write ){
-	var str,
+	var str, lines,
 		prevLines = [],
 		out = [],
 		closed = false,
 		props = opts.props,
+		absolute = props.absolute,
 		step = props.step,
-		first = props.first = Math.max(0, props.first-1),
-		last = props.last,
+		first = Math.max(0, props.first),
+		last = props.last || first-1,
 		count = props.count,
-		lines = data.split( props.delimiter),
+		range = props.range || [first, count ? Math.max(first-1+count,last) : last],
+		original = data.split( props.delimiter),
 		commentDelim = props.commentDelim,
 		trim = props.trim,
 		ignoreEmpty = props.ignoreEmpty,
@@ -116,9 +105,11 @@ function parse( opts, data, write ){
 		parser = {
 			index : indices
 		};
-		
-	function setup(){
 				
+	function setup(){
+		//if the range is only a single range, then wrap it in another array
+		if( typeof range[0] === "number" ) range = [range];
+		
 		Object.defineProperties( writer, {
 			write : {
 				value : addLine,
@@ -209,8 +200,9 @@ function parse( opts, data, write ){
 	}
 	
 	function canContinue(){
-		return (!count || validIndex < count) &&
-			(!last || validIndex < last-first);
+		return !count || (absolute ? 
+			index < count :
+			validIndex < count);
 	}
 	
 	function isValid( str ){
@@ -231,12 +223,16 @@ function parse( opts, data, write ){
 	}
 	
 	function nextLine( i, ignoreValid ){
-		var i = i || step;
+		var i = i || step,
+			valid_step = absolute ? 1 : i,
+			absolute_step = absolute ? i : 1;
 		
 		str = null;
 		
-		while( !closed && i && canContinue() ){
-			str = getFirst(lines);
+		while( !closed && valid_step && canContinue() ){
+			i = absolute_step;
+			//skip lines based on the absolute step
+			while( i-- ) str = getFirst(lines);
 			
 			prevLines.push(str);
 			
@@ -244,7 +240,8 @@ function parse( opts, data, write ){
 			
 			str = clean(str);
 			
-			if( isValid( str ) ) i--;
+			if( isValid( str ) ) valid_step--;
+			else str = null;
 			
 			index++;
 		}
@@ -255,14 +252,16 @@ function parse( opts, data, write ){
 	}
 	
 	function hasNextLine( target ){
-		var i = 0,
-			count = 0,
-			target = target || step;
-		while( !closed && i < lines.length ){
-			if( isValid( clean( lines[i++] ) ) ){
-				//return true if we have enough valid lines
-				if( ++count === target ) return true;
-			}
+		var inc = absolute ? step : 1,
+			i = inc-1,
+			this_count = 0,
+			stop = absolute && count ? last-index : lines.length,
+			target = target || (absolute ? 1 : step);
+
+		while( !closed && i < stop && (absolute || !count || validIndex+this_count < count) ){
+			//return true if we have enough valid lines
+			if( isValid( clean( lines[i] ) ) && ++this_count === target ) return true;
+			i += inc;
 		}
 		return false;
 	}
@@ -276,35 +275,50 @@ function parse( opts, data, write ){
 	}
 	
 	function start(){
-		var i;
 		setup();
 		init();
 		
-		i=first;
-		//remove up to the first line
-		while( i-- ) nextLine(1,true);
-		
-		//handle the first line
-		if( isString( nextLine(1) ) ) line();
-		
-		//go through every line in the array or until it reaches the end index
-		while( isString( nextLine() ) ) line();
-
+		range.forEach( function( arr ){
+			lines = original.slice();
+			first = arr[0]-1;
+			last = arr[1];
+			count = last-first;
+			index = 0;
+			validIndex = 0;
+			
+			if( absolute ) lines.splice(0,first);
+			//remove up to the first line
+			else while( first-- ) nextLine(1,true);
+			
+			//handle the first line
+			if( isString( nextLine(1) ) ) line();
+			
+			//go through every line in the array or until it reaches the end index
+			while( isString( nextLine() ) ) line();
+		});
 		tryClose();
 	}
 	
 	start();
 };
 
+/*****
+The function to get a file from the web (accepts http or https)
+opts	:		Object			:	The properties to ues when parsing the file
+path	:		String			:	The path to the file on the web
+write	:	Boolean | Function	:	False, or the 'write file' function
+count	:		Number			:	The number of redirects
+*****/
 function get( opts, path, write, count ){
 	var getter = path.startsWith('https://') ? https : http;
 	
+	//return if the redirect limit is reached
 	if( count >= opts.props.maxRedirects ) return;
 	
 	getter.get( path, function (res) {
 		var file = '';
 		
-		//handle a redirect
+		//handle a redirect with an increased redirect counter
 		if (res.statusCode >= 300 && res.statusCode < 400 && 'location' in res.headers){
 			path = url.resolve(path, res.headers.location);
 			return get( opts, path, write, ++count );
@@ -313,39 +327,56 @@ function get( opts, path, write, count ){
 		res.on('data', function(chunk) {
 			file += chunk;
 		});
+		
 		res.on('end', function() {
 			parse( opts, file, write )
 		});
 	});
 };
 
+/*****
+To create a new properties object based on the input object and the input templates
+props		:	Object	:	The input properties
+template	:	Array	:	The templates the properties are based off of
+*****/
 function flattenProps( props, template ){
 	var key,
 		props = props || {},
 		ret = {};
 	
+	//first copy the base properties
 	for( key in Settings ) ret[key] = Settings[key];
 	
 	//add the default template to the front of array if it isn't already there
 	if( template.indexOf('default') === -1 ) addFirst(template,'default');
-		
-	//to update the default props
+	
+	//then copy the template properties
 	template.forEach(function(name){
 		var temp, tempProps;
 			
 		temp = Templates[name];
+		//return if the template doesnt exist or the template doesn't have properties
 		if( !temp || !(tempProps = temp.props) ) return;
 		
 		for( key in tempProps ) ret[key] = tempProps[key];
 	});
 	
+	//finally copy the input properties
 	for( key in props ) ret[key] = props[key];
 	
 	return ret;
 };
 
+/*****
+The function to create the line parser based on certain input settings
+
+opts	:	Object		:	The input functions and settings
+write	:	Boolean		:	Whether the function will write to a file or not
+
+*****/
 function apply( opts, write ){
 	var opts = opts || {},
+		//create a new props object using the inputs properties and the template
 		props = opts.props = flattenProps(opts.props, opts.template = opts.template || []),
 		path = opts.in || props.in,
 		out = opts.out || props.out || path,
@@ -354,6 +385,7 @@ function apply( opts, write ){
 			
 	if( !path ) return;
 	
+	//if we are writing, then redefine write to be a function
 	if( write ) write = sync ? function( data, callback ){
 		writeFileSync(out, data);
 		callback();
@@ -361,7 +393,8 @@ function apply( opts, write ){
 		writeFile(out, data, callback);
 	};
 	
-	if( path.startsWith('http://') || path.startsWith('https://') ) return get( opts, path, write, 0 );
+	//if it is a web source, then get the data
+	if( path.match(/^https?:\/\//) ) return get( opts, path, write, 0 );
 	
 	if( sync ) return parse( opts, readFileSync( path, encoding ), write );
 	

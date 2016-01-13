@@ -35,12 +35,10 @@ For all of the examples, let's pretend that `example.txt` consists of the follow
 **Simple Example**
 ```javascript
 LineDriver.read( {
+  in : 'path/to/example.txt'
   line : function( props, parser ){
     console.log( parser.line );
   },
-  props : {
-    in : 'path/to/example.txt'
-  }
 } );
 ```
 
@@ -51,7 +49,9 @@ LineDriver.read( {
   * `parser` - The object that allows the function to interact with the state of the Parser
     * `parser.line` - The line that the parser is currently handling
     * This object has more attributes/properties, some of which are only available in certain contexts.  Please read the [API](#api) documentation to learn more.
-* `props.in` - The path to the file to be read (using `fs.readFile`)
+* `in` - The path to the file to be read (using `fs.readFile`)
+    * This path can also be an web address starting with 'http://' or 'https://'
+
 
 In this scenario, every line from the file will be captured and printed to the console:
 
@@ -66,27 +66,30 @@ five
 ---
 **Line Index Exclusion**
 
-There are four input properties that define which lines are sent to the `line` function.
+There are five input properties that define which lines are sent to the `line` function that can be used independently from or in conjunction with each other.
 
 * `first` - The index of the first line to capture
   * *Default :* `1`
 * `last` - The index of the last line to capture
 * `count` - How many total lines to capture
+* `range` - An array of the [first, last] values
 * `step` - Spacing betweens captured lines
   * *Default :* `1`
 
-*Note -* All of these can be used independently from or in conjunction with each other.
-
+*Note -* There is an additional settings called `absolute`, which defines whether these indices refer to the 'absolute line index' or the 'valid line index'
+  * *Default :* `false` ('valid line index')
+  * [See here for examples of Absolute vs Relative](#abs_vs_valid)
+  
 ---
 * **first**
 
 ```javascript
 LineDriver.read( {
+  in : 'path/to/example.txt',
   line : function( props, parser ){
     console.log( parser.line );
   },
   props : {
-    in : 'path/to/example.txt',
     first : 2
   }
 } );
@@ -106,11 +109,11 @@ five
 
 ```javascript
 LineDriver.read( {
+  in : 'path/to/example.txt',
   line : function( props, parser ){
     console.log( parser.line );
   },
   props : {
-    in : 'path/to/example.txt',
     last : 4
   }
 } );
@@ -130,11 +133,11 @@ four
 
 ```javascript
 LineDriver.read( {
+  in : 'path/to/example.txt',
   line : function( props, parser ){
     console.log( parser.line );
   },
   props : {
-    in : 'path/to/example.txt',
     first : 2,
     count : 3
   }
@@ -150,15 +153,66 @@ four
 >
 ```
 ---
-* **step**
+* **range**
 
 ```javascript
 LineDriver.read( {
+  in : 'path/to/example.txt',
   line : function( props, parser ){
     console.log( parser.line );
   },
   props : {
-    in : 'path/to/example.txt',
+    range : [2,4]
+  }
+} );
+```
+
+Only lines 2-4 will be captured:
+
+```
+two
+three
+four
+>
+```
+
+You can also use an array of ranges:
+
+```javascript
+LineDriver.read( {
+  in : 'path/to/example.txt',
+  line : function( props, parser ){
+    console.log( parser.line );
+  },
+  props : {
+    range : [[1,3],[3,5]]
+  }
+} );
+```
+
+The ranges are processed sequentially:
+
+```
+one
+two
+three
+three
+four
+five
+>
+```
+
+*Note -* `init` and `close` is still only run once
+---
+* **step**
+
+```javascript
+LineDriver.read( {
+  in : 'path/to/example.txt',
+  line : function( props, parser ){
+    console.log( parser.line );
+  },
+  props : {
     step : 2
   }
 } );
@@ -178,7 +232,7 @@ five
 There are two input functions that can access `parser.line` before it gets sent to the `line` function.
 
 * `valid` - The function to determine if the `parser.line` is valid or not.
-  * *Note -* An invalid line will not be included in the **Line Index Exclusion** calculations or sent to the `line` function 
+  * *Note -* An invalid line will not be sent to the `line` function 
 * `clean` - The function to modify the `parser.line` **_before_** sending for validation
 
 ---
@@ -186,14 +240,12 @@ There are two input functions that can access `parser.line` before it gets sent 
 
 ```javascript
 LineDriver.read( {
+  in : 'path/to/example.txt',
   line : function( props, parser ){
     console.log( parser.line );
   },
   valid : function( props, parser ){
     parser.valid = parser.line.length > 3;
-  },
-  props : {
-    in : 'path/to/example.txt',
   }
 } );
 ```
@@ -212,11 +264,11 @@ five
 >
 ```
 ---
-<a name='invalid'></a>
 **clean**
 
 ```javascript
 LineDriver.read( {
+  in : 'path/to/example.txt',
   line : function( props, parser ){
     console.log( parser.line );
   },
@@ -225,9 +277,6 @@ LineDriver.read( {
   },
   valid : function( props, parser ){
     parser.valid = parser.line.length > 3;
-  },
-  props : {
-    in : 'path/to/example.txt',
   }
 } );
 ```
@@ -262,11 +311,11 @@ In the following example, let's assume that that `example.txt` now looks like th
 Now let's use the above properties:
 ```javascript
 LineDriver.read( {
+  in : 'path/to/example.txt',
   line : function( props, parser ){
     console.log( parser.line );
   },
   props : {
-    in : 'path/to/example.txt',
     commentDelim : '#',
     trim : true,
     ignoreEmpty : true
@@ -298,24 +347,63 @@ five
 >
 ```
 
-*Note -* As mentioned above, all **_invalid_** lines are completely ignored by the Parser, even when considering **Line Index Exclusion** criteria.
+---
+**Absolute vs Valid Lines**<a name='abs_vs_valid'></a>
 
-That means that adding the following Property into the above example:
+There are two methods of excluding lines based on the index, using the absolute line index or using the valid line index.
+* Denoted by the `absolute` property
+
+Below are examples of different properties (using the same messy file and line validation as above) and what they will produce:
+
+---
 ```javascript
-first : 3
+props : {
+  first : 3,
+  absolute : true
+}
 ```
 
-will produce:
+Every line starting from line 3 will be checked for validation
+
 ```
+two
 three
 four
 five
 >
 ```
+---
+```javascript
+props : {
+  last : 3,
+  absolute : true
+}
+```
 
-The Parser starts at the 3rd **_valid_** line, even though it is actually the 4th line in the file.
+Every line up to and including line 3 will be checked for validation
 
-This is also true for `last`, `count`, and `step`.
+```
+one
+two
+>
+```
+---
+```javascript
+props : {
+  step : 2,
+  absolute : true
+}
+```
+
+Every other line will be checked for validation:
+
+```
+one
+two
+four
+five
+>
+```
 
 ---
 **Closing a File**
@@ -324,12 +412,10 @@ A Parser can be forced to close by running the `parser.close()` function.
 
 ```javascript
 LineDriver.read( {
+  in : 'path/to/example.txt',
   line : function( props, parser ){
     console.log( parser.line );
     if( parser.line === 'three' ) parser.close();
-  },
-  props : {
-    in : 'path/to/example.txt',
   }
 } );
 ```
@@ -360,6 +446,7 @@ Let's again assume that `example.txt` is back to its original state.
 
 ```javascript
 LineDriver.read( {
+  in : 'path/to/example.txt',
   init : function( props, parser ){
     console.log('Parsing Started...');
   },
@@ -368,9 +455,6 @@ LineDriver.read( {
   },
   close : function( props, parser ){
     console.log('...Parsing Finished');
-  },
-  props : {
-    in : 'path/to/example.txt'
   }
 } );
 ```
@@ -408,19 +492,17 @@ There are five more input properties:
 **Example**
 ```javascript
 LineDriver.write( {
+  in : 'path/to/example.txt',
+  out : 'path/to/new/file.txt',
   line : function( props, parser ){
     parser.write( parser.line );
-  },
-  props : {
-    in : 'path/to/example.txt',
-    out : 'path/to/new/file.txt'
   }
 } );
 ```
 
 The only difference between reading and writing a file is the `out` property and the `parser.write` function.
 
-* `props.out` - The path to the file to be written (using `fs.writeFile`)
+* `out` - The path to the file to be written (using `fs.writeFile`)
   * *Optional* - If no `out` path is given, it write back to the `in` path
 * `parser.write` - The function to add a line to the `out` file.  Input can be a string or array of strings
   * *Note -* `parser.write` still exists for `LineDriver.read()`, but it will not do anything.
@@ -475,6 +557,8 @@ The default settings and values are:
   * *Default :* `'utf8'`
 * `eof` - The String to add to the end of the file (attached to the last line)
   * *Default :* `''`
+* `absolute` - Whether the **Line Index Exclusion** calculations use the 'absolute line index' or the 'valid line index'
+  * *Default :* `false`
 * `first` - The index of the first line to capture
   * *Default :* `1`
 * `ignoreEmpty` - Whether or not empty strings (`''`) should be be considered invalid
@@ -487,6 +571,8 @@ The default settings and values are:
   * *Default :* `false`
 * `trim` - Whether or not surrounding whitespace should be removed from the string
   * *Default :* `false`
+* `maxRedirects` - The number of redirects (when reading from an http/https source) before failing
+  * *Default :* `5`
 
 ---
   
@@ -505,6 +591,7 @@ The input options are one or more of the following:
 * **Properties**
 * **Functions**
 * **Templates**
+* **Paths**
 
 Here is a simple example:
 
@@ -514,14 +601,26 @@ In this example:
 
 ```javascript
 LineDriver.read( {
+  in : 'path/to/example.txt',
   line : function( props, parser ){
     console.log( parser.line );
-  },
-  props : {
-    in : 'path/to/example.txt'
   }
 } );
 ```
+---
+**Paths**
+
+There are two different path objects that the parser recognizes:
+
+* `in` - The path to the file to be read (using `fs.readFile`)
+  * **_Required_**
+  * This path can also be an web address starting with 'http://' or 'https://'
+* `out` - The path to the file to be written (using `fs.writeFile`)
+  * *Optional* - default = `in` path
+  * This is only used by `LineDriver.write`
+  
+*Note -* The number of acceptable redirects can be set using the `maxRedirects` property (see above)
+  
 ---
 **Functions**
 
@@ -530,7 +629,7 @@ There are six functions that the Parser recognizes and handles:
 * `init` - The function to run once the `in` file is loaded but before the file parsing begins
 * `clean` - The function to modify the `parser.line` **_before_** sending for validation
 * `valid` - The function to determine if the `parser.line` is valid or not.
-  * An invalid line will not be included in the **Line Index Exclusion** calculations or sent to the `line` function 
+  * An invalid line will not be sent to the `line` function 
 * `line` - The function to be called every time the Parser encounters a new line
 * `close` - The function to run once the `in` file is done being parsed
 * `write` - The function to run once the `out` file has been written
@@ -564,6 +663,9 @@ The parser object has the following attributes:
 
 The parser object has the following attributes:
 * `line` - The line that the parser is currently handling
+* `index` - The object containing the index of the current line
+  * `absolute` - The index of the current line from the start of the file, including invalid lines
+  * `valid` - The index of the **_previous_** valid line from the first valid line, excluding invalid lines
 
 ```javascript
   clean : function( props, parser ){
@@ -577,11 +679,13 @@ The parser object has the following attributes:
 The parser object has the following attributes:
 * `line` - The line that the parser is currently handling
 * `valid` - Determines whether the current line is a valid line or not.
+* `index` - The object containing the index of the current line
+  * `absolute` - The index of the current line from the start of the file, including invalid lines
+  * `valid` - The index of the **_previous_** valid line from the first valid line, excluding invalid lines
 
 *Notes:*
   * In this context, `line` is a copy of the actual `line`; modifying it will have no effect
-  * An invalid line will not be included in the **Line Index Exclusion** calculations or sent to the `line` function 
-    * For more info, see an example [here](#invalid)
+  * An invalid line will not be sent to the `line` function
 
 ```javascript
   valid : function( props, parser ){
@@ -596,7 +700,7 @@ The parser object has the following attributes:
 * `line` - The line that the parser is currently handling
 * `index` - The object containing the index of the current line
   * `absolute` - The index of the current line from the start of the file, including invalid lines
-  * `valid` - The index of the current line from the first valid line, excluding invalid lines
+  * `valid` - The index of the **_current__** line from the first valid line, excluding invalid lines
 * `close` - The function to stop parsing lines and call the `close` and `write` functions (if applicable)
 * `hasNextLine` - The function to see if there are any valid lines left in the file
   * Arguments:
@@ -654,11 +758,6 @@ The properties are any settings which you would like to override the default val
 
 In additional to the settings listed [above](#settings_api), the Parser can recognize these additional settings:
 
-* `in` - The path to the file to be read (using `fs.readFile`)
-  * **_Required_**
-* `out` - The path to the file to be written (using `fs.writeFile`)
-  * *Optional* - default = `in` path
-  * This is only used by `LineDriver.write`
 * `last` - The index of the last line to capture
 * `count` - How many total lines to capture
   
@@ -725,15 +824,13 @@ Now let's use that template:
   
 ```javascript
 LineDriver.read({
+  in : 'path/to/example.txt',
   line : function(args, parser){
     var value = props.currentCell.value,
       colTitle = props.titles.cols[props.currentCell.row],
       rowTitle = props.titles.rows[props.currentCell.col];
       
     console.log( rowTitle + ' + ' + colTitle + ' = ' + value );
-  },
-  props : {
-    in : 'path/to/example.txt'
   },
   template : ['table']
 })
@@ -769,11 +866,11 @@ And it can be used in the following manner:
  
 ```javascript
 LineDriver.read({
+  in : 'path/to/example.txt',
   props : {
-    in : 'path/to/example.txt',
     handleCell : function(value, colTitle, rowTitle){
       console.log( rowTitle + ' + ' + colTitle + ' = ' + value );
-    },
+    }
   },
   template : ['table']
 })
