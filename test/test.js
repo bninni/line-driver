@@ -31,26 +31,6 @@ vows.describe('Reading a File').addBatch({
 			});
         }
     },
-    'when removing the delimiter': {
-        topic: ['one','two','three','four','five'].join('\r\n'),
-
-        'we get a single line': function (topic) {
-			var line;
-			LineDriver.read( {
-				line : function( props, parser ){
-					line = parser.line;
-					assert.equal( parser.hasNextLine(), false );
-				},
-				close : function( props, parser ){
-					assert.equal( line, topic );
-				},
-				in : 'test/test.txt',
-				props : {
-					delimiter : null
-				}
-			});
-        }
-    },
 }).exportTo(module);
 	
 vows.describe('Skipping Lines').addBatch({
