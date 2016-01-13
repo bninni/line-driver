@@ -1,5 +1,6 @@
 # line-driver
-[![Build Status](https://travis-ci.org/bninni/line-driver.svg?branch=1.1.6)](https://travis-ci.org/bninni/line-driver)
+[![Build Status](https://travis-ci.org/bninni/line-driver.svg?branch=1.1.7)](https://travis-ci.org/bninni/line-driver)
+
 A simple configurable module to read or write files line by line.
 
 ## Install
