@@ -6,7 +6,7 @@ Add csv parsing using templates
 
 */
 
-var LineDriver = require('../line-driver.js'),
+var LineDriver = require('../index.js'),
 	vows = require('vows'),
     assert = require('assert');
 

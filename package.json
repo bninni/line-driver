@@ -1,14 +1,14 @@
 {
   "name": "line-driver",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "devDependencies": {
     "vows": "~0.8.1"
   },
   "description": "A simple configurable module to read or write files line by line.",
-  "main": "line-driver.min.js",
+  "main": "index.js",
   "scripts": {
 	"test": "vows test/test.js --spec",
-	"uglify": "uglifyjs line-driver.js --compress --mangle sort,toplevel -o line-driver.min.js"
+	"uglify": "uglifyjs lib/line-driver.js --compress --mangle sort,toplevel -o line-driver.min.js"
   },
   "repository": {
     "type": "git",

@@ -37,10 +37,10 @@ For all of the examples, let's pretend that `example.txt` consists of the follow
 **Simple Example**
 ```javascript
 LineDriver.read( {
-  in : 'path/to/example.txt'
+  in : 'path/to/example.txt',
   line : function( props, parser ){
     console.log( parser.line );
-  },
+  }
 } );
 ```
 
@@ -357,6 +357,9 @@ There are two methods of excluding lines based on the index, using the absolute 
 
 Below are examples of different properties (using the same messy file and line validation as above) and what they will produce:
 
+
+Using `first`:
+
 ---
 ```javascript
 props : {
@@ -375,6 +378,8 @@ five
 >
 ```
 ---
+Using `last`:
+
 ```javascript
 props : {
   last : 3,
@@ -390,6 +395,8 @@ two
 >
 ```
 ---
+Using `step`:
+
 ```javascript
 props : {
   step : 2,
